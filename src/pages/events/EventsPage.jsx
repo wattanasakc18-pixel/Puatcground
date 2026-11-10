@@ -90,12 +90,12 @@ export default function EventsPage() {
         key={`${event.id}-${levels[0]?.event_date}`}
         to={`/events/${event.id}`}
         title={event.title}
-        className={`block border-l-2 ${CHIP_EDGE[status] ?? 'border-l-ink/30'} bg-bg/80 hover:bg-sun/25 rounded-r-sm px-1.5 py-1 transition-colors`}
+        className={`block border-l-2 ${CHIP_EDGE[status] ?? 'border-l-ink/30'} bg-bg hover:bg-cobalt/5 rounded-r-md px-1.5 py-1 transition-colors`}
       >
         <span className="block truncate text-[11px] font-medium leading-tight text-ink">{event.title}</span>
         <span className="flex items-center gap-1 text-[10px] leading-tight text-ink/50">
           {levelLabel}
-          {registeredIn(event) && <span className="w-1.5 h-1.5 rounded-full bg-sun" title="ลงชื่อแล้ว" aria-label="ลงชื่อแล้ว" />}
+          {registeredIn(event) && <span className="w-1.5 h-1.5 rounded-full bg-leaf" title="ลงชื่อแล้ว" aria-label="ลงชื่อแล้ว" />}
         </span>
       </Link>
     );
@@ -132,7 +132,7 @@ export default function EventsPage() {
         </section>
       )}
 
-      <section className="bg-white rounded-2xl border border-line p-4" aria-label="ปฏิทินรายเดือน">
+      <section className="bg-white rounded-xl border border-line p-4" aria-label="ปฏิทินรายเดือน">
         <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
           <div className="flex items-center gap-1">
             <Button variant="ghost" onClick={() => setMonth((m) => addMonths(m, -1))} aria-label="เดือนก่อนหน้า">
@@ -154,7 +154,7 @@ export default function EventsPage() {
             <div className="hidden md:block border border-line rounded-md overflow-hidden">
               <div className="grid grid-cols-7 gap-px bg-line">
                 {WEEKDAY_LABELS.map((label, i) => (
-                  <div key={label} className={`bg-bg text-center text-xs font-semibold py-2 ${i === 0 || i === 6 ? 'text-coral' : 'text-ink/60'}`}>
+                  <div key={label} className={`bg-bg text-center text-xs font-semibold py-2 ${i === 0 || i === 6 ? 'text-ink/40' : 'text-ink/60'}`}>
                     {label}
                   </div>
                 ))}
@@ -165,7 +165,7 @@ export default function EventsPage() {
                     <div key={day} className={`min-h-28 p-1.5 ${outside ? 'bg-bg/70' : 'bg-white'}`}>
                       <span
                         className={`inline-flex items-center justify-center w-6 h-6 text-xs rounded-full ${
-                          day === today ? 'bg-sun text-ink font-bold' : outside ? 'text-ink/30' : 'text-ink/70 font-medium'
+                          day === today ? 'bg-cobalt text-white font-bold' : outside ? 'text-ink/30' : 'text-ink/70 font-medium'
                         }`}
                       >
                         {dayNumber(day)}
@@ -181,7 +181,7 @@ export default function EventsPage() {
             <div className="md:hidden">
               <div className="grid grid-cols-7 gap-1 mb-4" aria-hidden="true">
                 {WEEKDAY_LABELS.map((label, i) => (
-                  <div key={label} className={`text-center text-[10px] font-semibold py-1 ${i === 0 || i === 6 ? 'text-coral' : 'text-ink/50'}`}>
+                  <div key={label} className={`text-center text-[10px] font-semibold py-1 ${i === 0 || i === 6 ? 'text-ink/40' : 'text-ink/50'}`}>
                     {label}
                   </div>
                 ))}
@@ -190,7 +190,7 @@ export default function EventsPage() {
                   return (
                     <div
                       key={day}
-                      className={`flex flex-col items-center rounded-md py-1 ${day === today ? 'bg-sun/30' : ''} ${!inMonth(day) ? 'opacity-30' : ''}`}
+                      className={`flex flex-col items-center rounded-md py-1 ${day === today ? 'bg-cobalt/10' : ''} ${!inMonth(day) ? 'opacity-30' : ''}`}
                     >
                       <span className={`text-xs leading-none ${day === today ? 'font-bold' : 'text-ink/70'}`}>{dayNumber(day)}</span>
                       <span className="flex gap-0.5 mt-1 h-1.5">

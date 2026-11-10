@@ -9,10 +9,10 @@ export function registrationStatus(eventLevel, countRow, now = new Date()) {
 }
 
 export const STATUS_META = {
-  'not-open': { label: 'ยังไม่เปิด', className: 'bg-sun text-ink' },
-  open: { label: 'เปิดรับ', className: 'bg-cobalt text-white' },
-  closed: { label: 'ปิดแล้ว', className: 'bg-ink/10 text-ink/70' },
-  full: { label: 'เต็ม', className: 'bg-coral text-white' },
+  'not-open': { label: 'ยังไม่เปิด', className: 'bg-sun/10 text-sun' },
+  open: { label: 'เปิดรับ', className: 'bg-cobalt/10 text-cobalt' },
+  closed: { label: 'ปิดแล้ว', className: 'bg-ink/5 text-ink/60' },
+  full: { label: 'เต็ม', className: 'bg-coral/10 text-coral' },
 };
 
 export const STATUS_REASONS = {

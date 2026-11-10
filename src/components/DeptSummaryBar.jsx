@@ -3,7 +3,7 @@ export default function DeptSummaryBar({ counts = [] }) {
   const belowMin = counts.filter((c) => c.is_below_min);
   const hasMin = counts.some((c) => c.min_per_dept != null);
   return (
-    <div className="bg-sun/20 border border-sun rounded-2xl p-4">
+    <div className="bg-sun/5 border border-sun/20 rounded-xl p-4">
       <h2 className="font-semibold text-sm mb-2">แผนกที่ยังไม่ครบขั้นต่ำ</h2>
       {belowMin.length === 0 ? (
         <p className="text-sm text-ink/70">

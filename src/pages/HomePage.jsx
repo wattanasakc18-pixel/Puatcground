@@ -11,17 +11,14 @@ import { LoadingState, EmptyState, ErrorState } from '../components/ui/States.js
 import EventCard from '../components/EventCard.jsx';
 import { LevelBadge } from '../components/Badges.jsx';
 import Avatar from '../components/Avatar.jsx';
-import Crest from '../components/Crest.jsx';
-import { HandRule, Squiggle, Tape } from '../components/Hand.jsx';
 
 function Board({ title, count, children }) {
   return (
     <section>
-      <div className="flex items-baseline justify-between gap-3 mb-1">
-        <h2 className="font-display font-semibold text-xl">{title}</h2>
-        {count != null && <span className="font-hand text-cobalt text-base whitespace-nowrap">{count} รายการ</span>}
+      <div className="flex items-baseline justify-between gap-3 mb-4">
+        <h2 className="font-semibold text-lg">{title}</h2>
+        {count != null && <span className="text-sm text-ink/50 whitespace-nowrap">{count} รายการ</span>}
       </div>
-      <HandRule className="text-ink/25 mb-5" />
       {children}
     </section>
   );
@@ -29,30 +26,24 @@ function Board({ title, count, children }) {
 
 function IdCard({ profile }) {
   return (
-    <div className="relative bg-white border border-line rounded-md p-4 shadow-sm overflow-hidden">
-      <Crest className="absolute -right-6 -bottom-6 w-32 h-32 opacity-[0.07]" />
-      <div className="flex items-center justify-between border-b border-line pb-2 mb-3">
-        <p className="text-[11px] font-semibold tracking-widest text-cobalt">บัตรนักศึกษา</p>
-        <Crest className="w-7 h-7" />
-      </div>
+    <div className="bg-white border border-line rounded-xl p-5 shadow-sm transition-colors group-hover:border-cobalt/40">
       <div className="flex items-center gap-3">
-        <Avatar url={profile?.avatar_url} name={fullName(profile)} size="w-14 h-14 text-lg" />
+        <Avatar url={profile?.avatar_url} name={fullName(profile)} size="w-12 h-12 text-base" />
         <div className="min-w-0">
-          <p className="font-display font-semibold leading-snug truncate">{fullName(profile)}</p>
-          <p className="text-xs text-ink/60 mt-0.5">{profile?.student_code}</p>
+          <p className="font-semibold leading-snug truncate">{fullName(profile)}</p>
+          <p className="text-xs text-ink/50 mt-0.5">{profile?.student_code}</p>
         </div>
       </div>
-      <dl className="mt-3 space-y-1.5 text-sm">
-        <div className="flex justify-between gap-2 border-b border-dashed border-line pb-1">
-          <dt className="text-ink/60">แผนก</dt>
+      <dl className="mt-4 space-y-2 text-sm">
+        <div className="flex justify-between gap-2">
+          <dt className="text-ink/50">แผนก</dt>
           <dd className="font-medium text-right">{profile?.department_name}</dd>
         </div>
-        <div className="flex justify-between gap-2 border-b border-dashed border-line pb-1">
-          <dt className="text-ink/60">ระดับ/ห้อง</dt>
+        <div className="flex justify-between gap-2">
+          <dt className="text-ink/50">ระดับ/ห้อง</dt>
           <dd className="font-medium">{profile?.level} {profile?.class_room}</dd>
         </div>
       </dl>
-      <div className="barcode mt-3 h-6 opacity-70" aria-hidden="true" />
     </div>
   );
 }
@@ -98,39 +89,32 @@ export default function HomePage() {
   );
 
   return (
-    <div className="space-y-8">
-      {/* หัวกระดาษแบบ asymmetric: คำทักทายใหญ่ + บัตรนักศึกษาเอียงทับมุม */}
+    <div className="space-y-10">
       <header className="grid lg:grid-cols-12 gap-8 items-start">
         <div className="lg:col-span-7 xl:col-span-8">
-          <p className="font-hand text-cobalt text-lg -rotate-1 inline-block">กระดานกิจกรรม · วิทยาลัย</p>
-          <h1 className="font-display font-bold text-4xl sm:text-5xl xl:text-6xl leading-[1.08] mt-3">
+          <p className="text-sm font-medium text-ink/50">กระดานกิจกรรม · วิทยาลัย</p>
+          <h1 className="font-bold text-3xl sm:text-4xl xl:text-5xl leading-tight mt-2">
             สวัสดี,
-            <span className="block relative text-cobalt mt-1 break-words">
-              {fullName(profile)}
-              <Squiggle className="absolute -bottom-1 left-0 w-full h-3 text-sun" />
-            </span>
+            <span className="block mt-1 break-words">{fullName(profile)}</span>
           </h1>
-          <p className="font-hand text-ink/65 text-lg mt-6 max-w-md leading-relaxed">
+          <p className="text-ink/60 mt-4 max-w-md">
             {openNow.length > 0
               ? `มี ${openNow.length} กิจกรรมกำลังเปิดรับสมัคร — ไปลงชื่อเป็นตัวแทนกันเถอะ`
               : 'ยังไม่มีกิจกรรมเปิดรับตอนนี้ ลองดูปฏิทินหรือแวะมาใหม่ภายหลังนะ'}
           </p>
-          <Link to="/events" className="inline-block mt-5">
+          <Link to="/events" className="inline-block mt-6">
             <Button variant="primary"><CalendarDays className="w-4 h-4" /> ดูปฏิทินกิจกรรม</Button>
           </Link>
         </div>
-        <div className="lg:col-span-5 xl:col-span-4 lg:mt-2">
-          <div className="relative -rotate-2 max-w-xs mx-auto lg:max-w-none">
-            <Tape className="-top-3 left-1/2 -translate-x-1/2 -rotate-3 z-10" />
-            <Link to="/profile" aria-label="ดูโปรไฟล์" className="block transition-transform ease-spring hover:rotate-1 hover:scale-[1.02]">
-              <IdCard profile={profile} />
-            </Link>
-          </div>
-          <p className="font-hand text-ink/50 text-sm text-center mt-3 -rotate-1">บัตรของฉัน · แตะดูโปรไฟล์</p>
+        <div className="lg:col-span-5 xl:col-span-4">
+          <Link to="/profile" aria-label="ดูโปรไฟล์" className="group block max-w-sm mx-auto lg:max-w-none">
+            <IdCard profile={profile} />
+          </Link>
+          <p className="text-ink/50 text-xs text-center mt-2">แตะบัตรเพื่อดูโปรไฟล์</p>
         </div>
       </header>
 
-      <HandRule className="text-ink/20" />
+      <hr className="border-line" />
 
       {eventsQuery.isPending ? <LoadingState /> : eventsQuery.isError ? (
         <ErrorState message={toThaiError(eventsQuery.error)} onRetry={() => eventsQuery.refetch()} />
@@ -163,9 +147,9 @@ export default function HomePage() {
                     action={<Link to="/events"><Button variant="secondary">ดูกิจกรรมที่เปิดรับ</Button></Link>}
                   />
                 ) : (
-                  <ul className="bg-white border border-line border-l-2 border-l-coral/50 rounded-sm divide-y divide-line shadow-sm pl-3">
+                  <ul className="bg-white border border-line rounded-xl divide-y divide-line shadow-sm">
                     {myUpcoming.map((r) => (
-                      <li key={r.id} className="p-3 flex items-center justify-between gap-2 flex-wrap">
+                      <li key={r.id} className="p-3.5 flex items-center justify-between gap-2 flex-wrap">
                         <Link to={`/events/${r.event_levels?.events?.id}`} className="font-medium text-cobalt">
                           {r.event_levels?.events?.title}
                         </Link>

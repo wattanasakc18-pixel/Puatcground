@@ -17,7 +17,7 @@ export default function Modal({ open, onClose, title, children, wide = false }) 
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className={`relative bg-white w-full ${wide ? 'sm:max-w-3xl' : 'sm:max-w-md'} max-h-[90vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl p-5 border border-line border-t-4 border-t-cobalt shadow-lg`}
+        className={`relative bg-white w-full ${wide ? 'sm:max-w-3xl' : 'sm:max-w-md'} max-h-[90vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl p-5 border border-line shadow-lg`}
       >
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold">{title}</h2>

@@ -1,9 +1,9 @@
-const BASE = 'w-full min-h-11 px-3 rounded-xl border border-line bg-white focus:border-cobalt';
+const BASE = 'w-full min-h-11 px-3 rounded-lg border border-line bg-white transition-colors focus:border-cobalt';
 
 export function Field({ label, error, required, htmlFor, children }) {
   return (
     <div>
-      <label htmlFor={htmlFor} className="block text-sm font-medium mb-1">
+      <label htmlFor={htmlFor} className="block text-sm font-medium mb-1.5">
         {label} {required && <span className="text-coral">*</span>}
       </label>
       {children}

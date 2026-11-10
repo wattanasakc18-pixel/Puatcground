@@ -104,7 +104,7 @@ export default function AdminEventsPage() {
       </div>
 
       {!isAdmin && (
-        <p className="text-sm text-ink/60 bg-sun/20 border border-sun/40 rounded-xl px-4 py-3">
+        <p className="text-sm text-ink/60 bg-sun/5 border border-sun/20 rounded-xl px-4 py-3">
           กิจกรรมที่คุณสร้างจะอยู่ในสถานะ <strong>รออนุมัติ</strong> จนกว่าผู้ดูแลระบบจะอนุมัติ นักเรียนจึงจะเห็นและลงชื่อได้
           {' · '}แก้ไขหรือลบได้เฉพาะกิจกรรมที่ยังรออนุมัติเท่านั้น
         </p>

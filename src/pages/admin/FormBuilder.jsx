@@ -172,7 +172,7 @@ export default function FormBuilder({ event, hasRegistrations }) {
           <Button onClick={openAdd}><Plus className="w-4 h-4" /> เพิ่มช่อง</Button>
         </div>
         {hasRegistrations && (
-          <p className="text-sm bg-sun/20 border border-sun rounded-xl px-3 py-2">
+          <p className="text-sm bg-sun/5 border border-sun/20 rounded-xl px-3 py-2">
             กิจกรรมนี้มีผู้ลงชื่อแล้ว การเปลี่ยนชนิดช่องหรือลบช่องจะเตือนก่อนเสมอ
           </p>
         )}

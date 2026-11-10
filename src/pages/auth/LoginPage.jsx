@@ -81,7 +81,7 @@ export default function LoginPage() {
             ยังไม่มีบัญชี?{' '}
             <Link to="/register" className="text-cobalt font-semibold">สมัครสมาชิก</Link>
           </p>
-          <p className="font-hand text-ink/50 text-sm text-center mt-3">ลืมรหัสผ่าน? ติดต่อผู้ดูแลระบบของวิทยาลัย</p>
+          <p className="text-ink/50 text-xs text-center mt-3">ลืมรหัสผ่าน? ติดต่อผู้ดูแลระบบของวิทยาลัย</p>
         </div>
       </main>
     </div>

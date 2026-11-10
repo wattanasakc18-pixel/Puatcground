@@ -279,7 +279,7 @@ export default function ProfilePage() {
             <p className="text-sm text-ink/60">รูปโปรไฟล์ ไม่เกิน 2 MB<br />รหัสนักศึกษาเปลี่ยนไม่ได้</p>
           </div>
           {(levelChanged || deptChanged) && (
-            <p className="text-sm bg-sun/25 border border-sun rounded-xl px-3 py-2">
+            <p className="text-sm bg-sun/5 border border-sun/20 rounded-xl px-3 py-2">
               การเปลี่ยนระดับชั้น/แผนกมีผลต่อสิทธิ์และโควตาการลงชื่อในกิจกรรมต่างๆ
             </p>
           )}

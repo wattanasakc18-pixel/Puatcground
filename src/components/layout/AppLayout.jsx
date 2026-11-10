@@ -49,18 +49,17 @@ export default function AppLayout({ children }) {
       >
         ข้ามไปเนื้อหา
       </a>
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-line shadow-[0_1px_0_var(--color-line)]">
-        <div className="ribbon h-1" aria-hidden="true" />
+      <header className="sticky top-0 z-40 bg-white border-b border-line">
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex items-center gap-3 py-2.5">
             <Link to="/" className="flex items-center gap-2.5 mr-auto">
               <Crest className="w-10 h-10 shrink-0" />
               <span className="leading-tight">
                 <span className="block font-display font-bold text-lg">Puatc Ground</span>
-                <span className="hidden sm:block font-hand text-[13px] text-ink/60 -mt-0.5">ระบบลงชื่อตัวแทนทำกิจกรรม · วิทยาลัย</span>
+                <span className="hidden sm:block text-[13px] text-ink/60 -mt-0.5">ระบบลงชื่อตัวแทนทำกิจกรรม · วิทยาลัย</span>
               </span>
             </Link>
-            <span className="hidden lg:block"><span className="stamp text-cobalt">{fmtDate(todayStr())}</span></span>
+            <span className="hidden lg:block text-sm text-ink/50">{fmtDate(todayStr())}</span>
             <Link to="/profile" className="hidden md:block" aria-label="โปรไฟล์">
               <Avatar url={profile?.avatar_url} name={fullName(profile)} size="w-8 h-8 text-xs" />
             </Link>
@@ -107,7 +106,7 @@ export default function AppLayout({ children }) {
         </div>
       </header>
 
-      <main id="main" className="max-w-6xl mx-auto px-4 py-5">
+      <main id="main" className="max-w-6xl mx-auto px-4 py-6 md:py-8">
         {children ?? <Outlet />}
       </main>
 

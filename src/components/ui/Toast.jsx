@@ -21,7 +21,7 @@ export function ToastProvider({ children }) {
             key={t.id}
             className={`flex items-start gap-2 rounded-xl px-4 py-3 text-white shadow-lg ${t.type === 'error' ? 'bg-coral' : 'bg-ink'}`}
           >
-            {t.type === 'error' ? <AlertCircle className="w-5 h-5 shrink-0" /> : <CheckCircle2 className="w-5 h-5 shrink-0 text-sun" />}
+            {t.type === 'error' ? <AlertCircle className="w-5 h-5 shrink-0" /> : <CheckCircle2 className="w-5 h-5 shrink-0" />}
             <p className="text-sm">{t.message}</p>
           </div>
         ))}

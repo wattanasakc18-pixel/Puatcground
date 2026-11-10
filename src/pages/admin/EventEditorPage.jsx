@@ -298,7 +298,7 @@ export default function EventEditorPage() {
       </div>
 
       {locked && (
-        <div className="bg-sun/20 border border-sun/40 rounded-2xl p-4 text-sm text-ink/70">
+        <div className="bg-sun/5 border border-sun/20 rounded-xl p-4 text-sm text-ink/70">
           กิจกรรมนี้ได้รับอนุมัติแล้ว จึงแก้ไขไม่ได้ กรุณาติดต่อผู้ดูแลระบบหากต้องการเปลี่ยนแปลง
         </div>
       )}
