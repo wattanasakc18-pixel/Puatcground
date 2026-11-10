@@ -32,6 +32,8 @@ function GeneralTab({ event, onCreated }) {
   const [form, setForm] = useState(() => ({
     title: event?.title ?? '',
     description: event?.description ?? '',
+    location: event?.location ?? '',
+    contact_phone: event?.contact_phone ?? '',
     category_id: event?.category_id ?? '',
     academic_year: event?.academic_year ?? String(Number(todayStr().slice(0, 4)) + 543),
     registration_type: event?.registration_type ?? 'individual',
@@ -77,6 +79,14 @@ function GeneralTab({ event, onCreated }) {
         <Textarea id="g-desc" value={form.description} onChange={set('description')} placeholder="อธิบายกิจกรรม สถานที่ เครื่องแต่งกาย ฯลฯ" />
       </Field>
       <div className="grid sm:grid-cols-2 gap-4">
+        <Field label="สถานที่จัด" htmlFor="g-location">
+          <Input id="g-location" value={form.location} onChange={set('location')} placeholder="เช่น หอประชุมใหญ่ อาคาร 1" />
+        </Field>
+        <Field label="เบอร์ติดต่อ" htmlFor="g-phone">
+          <Input id="g-phone" type="tel" value={form.contact_phone} onChange={set('contact_phone')} placeholder="เช่น 081-234-5678" />
+        </Field>
+      </div>
+      <div className="grid sm:grid-cols-2 gap-4">
         <Field label="หมวดกิจกรรม" htmlFor="g-cat">
           <Select id="g-cat" value={form.category_id} onChange={set('category_id')}>
             <option value="">ไม่ระบุหมวด</option>
@@ -97,7 +107,7 @@ function GeneralTab({ event, onCreated }) {
               aria-pressed={form.registration_type === t.value}
               className={`min-h-11 rounded-xl border px-3 text-sm font-medium ${form.registration_type === t.value ? 'border-cobalt bg-cobalt/10 text-cobalt' : 'border-line bg-white text-ink/70'}`}
             >
-              {t.label}{t.value === 'booth' ? ' (ลงได้หลายบูธ)' : ' (ลงได้ครั้งเดียว)'}
+              {t.label}{t.value === 'booth' ? ' (ลงได้หลายคน)' : ' (ลงได้ครั้งเดียว)'}
             </button>
           ))}
         </div>
@@ -127,13 +137,9 @@ function rowFromLevel(l) {
   };
 }
 
-function LevelsTab({ event }) {
+function LevelsTab({ event, rows, setRows }) {
   const toast = useToast();
   const queryClient = useQueryClient();
-  const [rows, setRows] = useState(() => LEVELS.map((level) => {
-    const existing = event.event_levels.find((l) => l.level === level);
-    return existing ? rowFromLevel(existing) : emptyRow(level);
-  }));
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
 
@@ -281,6 +287,21 @@ export default function EventEditorPage() {
   const hasRegistrations = (counts.data ?? []).some((c) => c.registered > 0);
   const locked = !isNew && event && !isAdmin && !(event.created_by === user?.id && event.approval_status === 'pending');
 
+  // เก็บ state ของ LevelsTab ที่นี่เพื่อไม่ให้ข้อมูลหายเวลาเปลี่ยน tab
+  const [levelsRows, setLevelsRows] = useState(null);
+
+  // เมื่อ event โหลดเสร็จและยังไม่มี levelsRows ให้ init ครั้งเดียว
+  useEffect(() => {
+    if (event && levelsRows === null) {
+      setLevelsRows(
+        LEVELS.map((level) => {
+          const existing = event.event_levels.find((l) => l.level === level);
+          return existing ? rowFromLevel(existing) : emptyRow(level);
+        }),
+      );
+    }
+  }, [event, levelsRows]);
+
   useEffect(() => {
     if (isNew && tab !== 'general') setSearchParams({}, { replace: true });
   }, [isNew, tab, setSearchParams]);
@@ -331,7 +352,9 @@ export default function EventEditorPage() {
               onCreated={(newId) => navigate(`/admin/events/${newId}/edit?tab=levels`, { replace: true })}
             />
           )}
-          {tab === 'levels' && event && <LevelsTab key={event.id} event={event} />}
+          {tab === 'levels' && event && levelsRows && (
+            <LevelsTab key={event.id} event={event} rows={levelsRows} setRows={setLevelsRows} />
+          )}
           {tab === 'form' && event && (
             <FormBuilder event={event} hasRegistrations={hasRegistrations} />
           )}

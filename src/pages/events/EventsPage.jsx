@@ -84,7 +84,6 @@ export default function EventsPage() {
   // ป้ายกิจกรรมย่อในช่องปฏิทินเดือน กดแล้วไปหน้ารายละเอียดกิจกรรม
   const renderChip = ({ event, levels }) => {
     const status = statusOf(event);
-    const levelLabel = levels.length > 1 ? 'รวม' : levels[0]?.level;
     return (
       <Link
         key={`${event.id}-${levels[0]?.event_date}`}
@@ -94,7 +93,7 @@ export default function EventsPage() {
       >
         <span className="block truncate text-[11px] font-medium leading-tight text-ink">{event.title}</span>
         <span className="flex items-center gap-1 text-[10px] leading-tight text-ink/50">
-          {levelLabel}
+          {levels.map((l) => l.level).join(' · ')}
           {registeredIn(event) && <span className="w-1.5 h-1.5 rounded-full bg-leaf" title="ลงชื่อแล้ว" aria-label="ลงชื่อแล้ว" />}
         </span>
       </Link>
@@ -127,7 +126,7 @@ export default function EventsPage() {
             <span className="w-2 h-2 rounded-full bg-cobalt" aria-hidden /> กำลังเปิดรับสมัคร
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {openNow.map((event) => renderCard({ event, levels: event.event_levels.filter((l) => l.level === profile?.level) }))}
+            {openNow.map((event) => renderCard({ event, levels: event.event_levels }))}
           </div>
         </section>
       )}

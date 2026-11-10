@@ -80,9 +80,7 @@ export default function HomePage() {
     <EventCard
       key={event.id}
       event={event}
-      levels={event.event_levels.filter((l) => l.level === profile?.level).length
-        ? event.event_levels.filter((l) => l.level === profile?.level)
-        : event.event_levels}
+      levels={event.event_levels}
       status={statusOf(event)}
       registered={registeredIn(event)}
     />
@@ -94,7 +92,7 @@ export default function HomePage() {
         <div className="lg:col-span-7 xl:col-span-8">
           <p className="text-sm font-medium text-ink/50">กระดานกิจกรรม · วิทยาลัย</p>
           <h1 className="font-bold text-3xl sm:text-4xl xl:text-5xl leading-tight mt-2">
-            สวัสดี,
+            ยินดีต้อนรับ,
             <span className="block mt-1 break-words">{fullName(profile)}</span>
           </h1>
           <p className="text-ink/60 mt-4 max-w-md">
@@ -120,6 +118,8 @@ export default function HomePage() {
         <ErrorState message={toThaiError(eventsQuery.error)} onRetry={() => eventsQuery.refetch()} />
       ) : (
         <div className="space-y-10">
+
+          {/* กำลังเปิดรับ */}
           <Board title="กำลังเปิดรับสมัคร และยังไม่ได้ลงชื่อ" count={openNow.length}>
             {openNow.length === 0 ? (
               <EmptyState title="ไม่มีกิจกรรมที่เปิดรับตอนนี้" hint="เมื่อมีกิจกรรมเปิดรับสมัครและคุณยังไม่ได้ลงชื่อ จะแสดงที่นี่" />
@@ -128,42 +128,54 @@ export default function HomePage() {
             )}
           </Board>
 
-          <div className="grid lg:grid-cols-5 gap-8 items-start">
-            <div className="lg:col-span-3">
-              <Board title="กิจกรรมในสัปดาห์นี้" count={thisWeek.length}>
-                {thisWeek.length === 0 ? (
-                  <EmptyState title="สัปดาห์นี้ไม่มีกิจกรรม" hint="ดูสัปดาห์อื่นๆ ได้ที่หน้ากิจกรรมและลงชื่อ" />
-                ) : (
-                  <div className="grid sm:grid-cols-2 gap-5">{thisWeek.map(card)}</div>
-                )}
-              </Board>
-            </div>
-            <div className="lg:col-span-2">
-              <Board title="สิ่งที่ฉันลงชื่อไว้" count={myUpcoming.length}>
-                {myUpcoming.length === 0 ? (
-                  <EmptyState
-                    title="ยังไม่มีกิจกรรมที่ลงชื่อไว้"
-                    hint="ไปลงชื่อเป็นตัวแทนกิจกรรมกันเถอะ"
-                    action={<Link to="/events"><Button variant="secondary">ดูกิจกรรมที่เปิดรับ</Button></Link>}
-                  />
-                ) : (
-                  <ul className="bg-white border border-line rounded-xl divide-y divide-line shadow-sm">
-                    {myUpcoming.map((r) => (
-                      <li key={r.id} className="p-3.5 flex items-center justify-between gap-2 flex-wrap">
-                        <Link to={`/events/${r.event_levels?.events?.id}`} className="font-medium text-cobalt">
-                          {r.event_levels?.events?.title}
-                        </Link>
-                        <span className="flex items-center gap-2 text-sm text-ink/60">
-                          <LevelBadge level={r.event_levels?.level} />
-                          {fmtDate(r.event_levels?.event_date)}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </Board>
-            </div>
-          </div>
+          {/* กิจกรรมสัปดาห์นี้ */}
+          <Board title="กิจกรรมในสัปดาห์นี้" count={thisWeek.length}>
+            {thisWeek.length === 0 ? (
+              <EmptyState title="สัปดาห์นี้ไม่มีกิจกรรม" hint="ดูสัปดาห์อื่นๆ ได้ที่หน้ากิจกรรมและลงชื่อ" />
+            ) : (
+              <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">{thisWeek.map(card)}</div>
+            )}
+          </Board>
+
+          {/* สิ่งที่ฉันลงชื่อไว้ */}
+          <Board title="สิ่งที่ฉันลงชื่อไว้" count={myUpcoming.length}>
+            {myUpcoming.length === 0 ? (
+              <EmptyState
+                title="ยังไม่มีกิจกรรมที่ลงชื่อไว้"
+                hint="ไปลงชื่อเป็นตัวแทนกิจกรรมกันเถอะ"
+                action={<Link to="/events"><Button variant="secondary">ดูกิจกรรมที่เปิดรับ</Button></Link>}
+              />
+            ) : (
+              <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-3">
+                {myUpcoming.map((r) => (
+                  <Link
+                    key={r.id}
+                    to={`/events/${r.event_levels?.events?.id}`}
+                    className="bg-white border border-line rounded-2xl p-4 flex items-center gap-3 hover:border-cobalt/40 transition-colors"
+                  >
+                    {/* วันที่ */}
+                    <div className="shrink-0 w-11 h-11 rounded-xl bg-cobalt/10 text-cobalt flex flex-col items-center justify-center leading-none">
+                      <span className="text-base font-bold">
+                        {new Date(`${r.event_levels?.event_date}T00:00:00+07:00`).getDate()}
+                      </span>
+                      <span className="text-[10px] mt-0.5 opacity-70">
+                        {new Date(`${r.event_levels?.event_date}T00:00:00+07:00`).toLocaleDateString('th-TH', { month: 'short' })}
+                      </span>
+                    </div>
+                    {/* ข้อมูล */}
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium truncate text-sm">{r.event_levels?.events?.title}</p>
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <LevelBadge level={r.event_levels?.level} />
+                        <span className="text-xs text-ink/50">{fmtDate(r.event_levels?.event_date)}</span>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </Board>
+
         </div>
       )}
     </div>

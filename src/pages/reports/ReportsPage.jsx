@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { BarChart3, Download } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { useEvents, useOrganizerLevels, useEventCounts, useRoster, useFormFields } from '../../hooks/useQueries.js';
+import { useEvents, useOrganizerLevels, useEventCounts, useRoster, useFormFields, useDepartments } from '../../hooks/useQueries.js';
 import { exportRosterCsv } from '../../lib/rosterCsv.js';
 import { toThaiError } from '../../lib/errors.js';
 import Button from '../../components/ui/Button.jsx';
@@ -29,6 +29,7 @@ export default function ReportsPage() {
   const counts = useEventCounts(eventId);
   const roster = useRoster(eventId);
   const fields = useFormFields(eventId);
+  const departmentsQuery = useDepartments();
 
   const filteredCounts = useMemo(() => {
     const rows = counts.data ?? [];
@@ -115,7 +116,11 @@ export default function ReportsPage() {
                 ))}
               </div>
 
-              <DeptSummaryBar counts={filteredCounts} />
+              <DeptSummaryBar
+                counts={filteredCounts}
+                departments={departmentsQuery.data ?? []}
+                eventLevels={levelFilter === 'all' ? (event?.event_levels ?? []) : (event?.event_levels ?? []).filter((l) => l.level === levelFilter)}
+              />
 
               <div className="bg-white rounded-2xl border border-line overflow-hidden">
                 <div className="overflow-x-auto">

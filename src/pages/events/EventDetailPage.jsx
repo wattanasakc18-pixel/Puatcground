@@ -24,7 +24,6 @@ import { useToast } from '../../components/ui/Toast.jsx';
 const TABS = [
   { key: 'info', label: 'ข้อมูลกิจกรรม' },
   { key: 'participants', label: 'ผู้เข้าร่วม' },
-  { key: 'faq', label: 'คำถาม–คำตอบ' },
 ];
 
 function TabBar({ active, onChange }) {
@@ -144,7 +143,7 @@ function RegistrationCard({
           </Button>
 
           {isBooth && myRegs.length === 0 && canSubmit && (
-            <p className="text-xs text-ink/50 text-center">ลงชื่อได้หลายบูธ</p>
+            <p className="text-xs text-ink/50 text-center">ลงชื่อได้หลายคน</p>
           )}
         </div>
       )}
@@ -198,6 +197,24 @@ function InfoTab({ event }) {
           </div>
         </div>
       )}
+
+      {/* สถานที่จัด + เบอร์ติดต่อ */}
+      {(event.location || event.contact_phone) && (
+        <div>
+          <h3 className="text-sm font-semibold text-ink/50 uppercase tracking-wide mb-3">ข้อมูลเพิ่มเติม</h3>
+          <div className="bg-bg rounded-2xl border border-line p-4 space-y-2 text-sm">
+            {event.location && (
+              <p><span className="text-ink/50">สถานที่จัด: </span>{event.location}</p>
+            )}
+            {event.contact_phone && (
+              <p>
+                <span className="text-ink/50">เบอร์ติดต่อ: </span>
+                <a href={`tel:${event.contact_phone}`} className="text-cobalt hover:underline">{event.contact_phone}</a>
+              </p>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -232,47 +249,6 @@ function ParticipantsTab({ eventId, rosterQuery }) {
           </li>
         ))}
       </ul>
-    </div>
-  );
-}
-
-// ── Tab: คำถาม–คำตอบ ─────────────────────────────────────────────────────────
-const FAQ_ITEMS = [
-  {
-    q: 'ลงชื่อกิจกรรมนี้แล้ว ยกเลิกได้ไหม?',
-    a: 'ได้ ตราบใดที่ยังอยู่ในช่วงเปิดรับสมัคร กดปุ่มยกเลิกในหน้านี้ได้เลย หากปิดรับสมัครแล้วต้องติดต่อผู้จัดกิจกรรมโดยตรง',
-  },
-  {
-    q: 'แก้ไขคำตอบในฟอร์มได้ไหม?',
-    a: 'ได้ ตราบใดที่ยังอยู่ในช่วงเปิดรับสมัคร กดปุ่มแก้ไขคำตอบในหน้านี้ได้เลย',
-  },
-  {
-    q: 'กิจกรรมประเภทรายบูธต่างจากรายบุคคลอย่างไร?',
-    a: 'แบบรายบุคคลลงชื่อได้ 1 ครั้งต่อกิจกรรม ส่วนแบบรายบูธสามารถลงชื่อได้หลายบูธในกิจกรรมเดียวกัน',
-  },
-];
-
-function FaqTab() {
-  const [open, setOpen] = useState(null);
-  return (
-    <div className="space-y-2">
-      {FAQ_ITEMS.map((item, i) => (
-        <div key={i} className="bg-white rounded-2xl border border-line overflow-hidden">
-          <button
-            className="w-full flex items-center justify-between px-4 py-3.5 text-left text-sm font-medium hover:bg-bg transition-colors"
-            onClick={() => setOpen(open === i ? null : i)}
-            aria-expanded={open === i}
-          >
-            <span>{item.q}</span>
-            <span className={`text-ink/40 transition-transform ${open === i ? 'rotate-180' : ''}`}>▾</span>
-          </button>
-          {open === i && (
-            <div className="px-4 pb-4 text-sm text-ink/70 leading-relaxed border-t border-line pt-3">
-              {item.a}
-            </div>
-          )}
-        </div>
-      ))}
     </div>
   );
 }
@@ -482,7 +458,6 @@ export default function EventDetailPage() {
           <div className="p-5">
             {activeTab === 'info' && <InfoTab event={event} />}
             {activeTab === 'participants' && <ParticipantsTab eventId={eventId} rosterQuery={rosterQuery} />}
-            {activeTab === 'faq' && <FaqTab />}
           </div>
         </div>
 

@@ -13,7 +13,7 @@ export const FIELD_TYPES = [
 
 export const REGISTRATION_TYPES = [
   { value: 'individual', label: 'รายบุคคล' },
-  { value: 'booth', label: 'รายบูธ' },
+  { value: 'booth', label: 'รายทีม' },
 ];
 
 export const ROLE_LABELS = {

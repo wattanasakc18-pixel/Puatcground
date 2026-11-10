@@ -184,88 +184,116 @@ export default function ProfilePage() {
   const deptChanged = form.department_id && form.department_id !== profile?.department_id;
 
   return (
-    <div className="space-y-5 max-w-3xl mx-auto">
-      <h1 className="text-xl font-bold">โปรไฟล์</h1>
+    <div className="space-y-6 max-w-4xl mx-auto">
 
-      <section className="bg-white rounded-2xl border border-line p-5">
-        <div className="flex items-start gap-4">
-          <Avatar url={profile?.avatar_url} name={fullName(profile)} size="w-20 h-20 text-2xl" />
+      {/* ── Hero Profile Card ── */}
+      <section className="bg-gradient-to-br from-cobalt to-cobalt/80 rounded-2xl p-6 text-white">
+        <div className="flex items-start gap-5">
+          <div className="relative shrink-0">
+            <Avatar url={profile?.avatar_url} name={fullName(profile)} size="w-20 h-20 text-2xl" />
+          </div>
           <div className="min-w-0 flex-1">
-            <p className="text-lg font-semibold">{fullName(profile)}</p>
-            <p className="text-ink/60 text-sm">รหัสนักศึกษา {profile?.student_code}</p>
-            <div className="mt-2 grid sm:grid-cols-2 gap-x-4 gap-y-1 text-sm">
-              <p><span className="text-ink/50">แผนก:</span> {profile?.department_name || '-'}</p>
-              <p><span className="text-ink/50">ระดับ/ห้อง:</span> {profile?.level} {profile?.class_room}</p>
-              <p><span className="text-ink/50">อีเมล:</span> {profile?.email || '-'}</p>
-              <p><span className="text-ink/50">เบอร์โทร:</span> {profile?.phone || '-'}</p>
+            <p className="text-white/70 text-xs mb-0.5">รหัสนักศึกษา {profile?.student_code}</p>
+            <p className="text-xl font-bold leading-snug">{fullName(profile)}</p>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {profile?.level && (
+                <span className="bg-white/20 text-white text-xs font-medium rounded-full px-2.5 py-0.5">{profile.level}</span>
+              )}
+              {profile?.department_name && (
+                <span className="bg-white/20 text-white text-xs font-medium rounded-full px-2.5 py-0.5">{profile.department_name}</span>
+              )}
+              {profile?.class_room && (
+                <span className="bg-white/20 text-white text-xs font-medium rounded-full px-2.5 py-0.5">ห้อง {profile.class_room}</span>
+              )}
             </div>
           </div>
-          <Button variant="secondary" onClick={openEdit}><Pencil className="w-4 h-4" /> แก้ไข</Button>
+          <Button variant="secondary" onClick={openEdit} className="shrink-0">
+            <Pencil className="w-4 h-4" /> แก้ไข
+          </Button>
+        </div>
+
+        {/* Info row */}
+        <div className="grid sm:grid-cols-2 gap-2 mt-5 pt-5 border-t border-white/20 text-sm">
+          <div className="flex items-center gap-2 text-white/80">
+            <span className="text-white/50">อีเมล</span>
+            <span className="font-medium truncate">{profile?.email || '-'}</span>
+          </div>
+          <div className="flex items-center gap-2 text-white/80">
+            <span className="text-white/50">เบอร์โทร</span>
+            <span className="font-medium">{profile?.phone || '-'}</span>
+          </div>
         </div>
       </section>
 
-      <section className="bg-white rounded-2xl border border-line p-5">
-        <h2 className="font-semibold mb-3">เปลี่ยนรหัสผ่าน</h2>
-        <div className="grid sm:grid-cols-2 gap-3">
-          <Field label="รหัสผ่านใหม่" required error={pwError}>
-            <Input type="password" value={pw} onChange={(e) => setPw(e.target.value)} autoComplete="new-password" />
-          </Field>
-          <Field label="ยืนยันรหัสผ่านใหม่" required>
-            <Input type="password" value={pwConfirm} onChange={(e) => setPwConfirm(e.target.value)} autoComplete="new-password" />
-          </Field>
-        </div>
-        <Button onClick={savePassword} loading={pwSaving} className="mt-3">เปลี่ยนรหัสผ่าน</Button>
-      </section>
+      {/* ── Bottom two columns ── */}
+      <div className="grid lg:grid-cols-[1fr_320px] gap-6 items-start">
 
-      <section className="bg-white rounded-2xl border border-line p-5" aria-label="ประวัติการลงชื่อ">
-        <h2 className="font-semibold mb-3">ประวัติการลงชื่อ</h2>
-        {regsQuery.isPending ? <LoadingState /> : regsQuery.isError ? (
-          <ErrorState message={toThaiError(regsQuery.error)} onRetry={() => regsQuery.refetch()} />
-        ) : regs.length === 0 ? (
-          <EmptyState
-            icon={History}
-            title="ยังไม่มีประวัติการลงชื่อ"
-            hint="ไปลงชื่อเป็นตัวแทนกิจกรรมได้ที่หน้ากิจกรรมและลงชื่อ"
-            action={<Link to="/events"><Button variant="secondary">ดูกิจกรรม</Button></Link>}
-          />
-        ) : (
-          <ul className="space-y-3">
-            {regs.map((reg) => {
-              const cancelled = Boolean(reg.cancelled_at);
-              const el = reg.event_levels;
-              const ev = el?.events;
-              const fields = fieldsForLevel(fieldsQuery.data?.filter((f) => f.event_id === el?.event_id), el?.level);
-              return (
-                <li key={reg.id} className={`border border-line rounded-xl p-4 ${cancelled ? 'opacity-50' : ''}`}>
-                  <div className="flex items-start justify-between gap-2 flex-wrap">
-                    <div>
-                      <Link to={`/events/${ev?.id}`} className="font-medium text-cobalt">{ev?.title}</Link>
-                      <div className="flex flex-wrap items-center gap-2 mt-1 text-sm text-ink/60">
-                        <LevelBadge level={el?.level} />
-                        <span>จัด {fmtDate(el?.event_date)}</span>
-                        <span>ลงชื่อ {fmtDateTime(reg.created_at)}</span>
-                        {cancelled && <span className="rounded-full bg-ink/10 px-2.5 py-0.5 text-xs">ยกเลิกแล้ว</span>}
+        {/* ── ประวัติการลงชื่อ ── */}
+        <section className="bg-white rounded-2xl border border-line p-5" aria-label="ประวัติการลงชื่อ">
+          <h2 className="font-semibold mb-4">ประวัติการลงชื่อ</h2>
+          {regsQuery.isPending ? <LoadingState /> : regsQuery.isError ? (
+            <ErrorState message={toThaiError(regsQuery.error)} onRetry={() => regsQuery.refetch()} />
+          ) : regs.length === 0 ? (
+            <EmptyState
+              icon={History}
+              title="ยังไม่มีประวัติการลงชื่อ"
+              hint="ไปลงชื่อเป็นตัวแทนกิจกรรมได้ที่หน้ากิจกรรมและลงชื่อ"
+              action={<Link to="/events"><Button variant="secondary">ดูกิจกรรม</Button></Link>}
+            />
+          ) : (
+            <ul className="space-y-3">
+              {regs.map((reg) => {
+                const cancelled = Boolean(reg.cancelled_at);
+                const el = reg.event_levels;
+                const ev = el?.events;
+                const fields = fieldsForLevel(fieldsQuery.data?.filter((f) => f.event_id === el?.event_id), el?.level);
+                return (
+                  <li key={reg.id} className={`border border-line rounded-xl p-4 ${cancelled ? 'opacity-50' : ''}`}>
+                    <div className="flex items-start justify-between gap-2 flex-wrap">
+                      <div>
+                        <Link to={`/events/${ev?.id}`} className="font-medium text-cobalt hover:underline">{ev?.title}</Link>
+                        <div className="flex flex-wrap items-center gap-2 mt-1 text-sm text-ink/60">
+                          <LevelBadge level={el?.level} />
+                          <span>จัด {fmtDate(el?.event_date)}</span>
+                          <span>ลงชื่อ {fmtDateTime(reg.created_at)}</span>
+                          {cancelled && <span className="rounded-full bg-ink/10 px-2.5 py-0.5 text-xs">ยกเลิกแล้ว</span>}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="mt-2">
-                    <AnswersSummary fields={fields} answers={reg.answers} />
-                  </div>
-                  {!cancelled && canModify(reg) && (
-                    <div className="flex gap-2 mt-3">
-                      <Button variant="secondary" onClick={() => openEditReg(reg)}><Pencil className="w-4 h-4" /> แก้ไข</Button>
-                      <Button variant="danger" onClick={() => setCancelling(reg)}><Trash2 className="w-4 h-4" /> ยกเลิก</Button>
+                    <div className="mt-2">
+                      <AnswersSummary fields={fields} answers={reg.answers} />
                     </div>
-                  )}
-                  {!cancelled && !canModify(reg) && (
-                    <p className="text-sm text-ink/50 mt-2">ปิดรับสมัครแล้ว หากต้องการแก้ไข/ยกเลิก กรุณาติดต่อผู้จัดกิจกรรม</p>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </section>
+                    {!cancelled && canModify(reg) && (
+                      <div className="flex gap-2 mt-3">
+                        <Button variant="secondary" onClick={() => openEditReg(reg)}><Pencil className="w-4 h-4" /> แก้ไข</Button>
+                        <Button variant="danger" onClick={() => setCancelling(reg)}><Trash2 className="w-4 h-4" /> ยกเลิก</Button>
+                      </div>
+                    )}
+                    {!cancelled && !canModify(reg) && (
+                      <p className="text-sm text-ink/50 mt-2">ปิดรับสมัครแล้ว หากต้องการแก้ไข/ยกเลิก กรุณาติดต่อผู้จัดกิจกรรม</p>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
+
+        {/* ── Sidebar: เปลี่ยนรหัสผ่าน ── */}
+        <section className="bg-white rounded-2xl border border-line p-5">
+          <h2 className="font-semibold mb-4">เปลี่ยนรหัสผ่าน</h2>
+          <div className="space-y-3">
+            <Field label="รหัสผ่านใหม่" required error={pwError}>
+              <Input type="password" value={pw} onChange={(e) => setPw(e.target.value)} autoComplete="new-password" />
+            </Field>
+            <Field label="ยืนยันรหัสผ่านใหม่" required>
+              <Input type="password" value={pwConfirm} onChange={(e) => setPwConfirm(e.target.value)} autoComplete="new-password" />
+            </Field>
+            <Button onClick={savePassword} loading={pwSaving} className="w-full">เปลี่ยนรหัสผ่าน</Button>
+          </div>
+        </section>
+
+      </div>
 
       <Modal open={editOpen} onClose={() => !saving && setEditOpen(false)} title="แก้ไขโปรไฟล์">
         <div className="space-y-4">

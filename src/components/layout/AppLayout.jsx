@@ -39,7 +39,7 @@ export default function AppLayout({ children }) {
   };
 
   const navLinkClass = ({ isActive }) =>
-    `px-3 py-2 text-sm font-medium transition-colors border-b-2 ${isActive ? 'border-cobalt text-cobalt' : 'border-transparent text-ink/70 hover:text-ink'}`;
+    `px-3 py-2 text-sm font-medium transition-colors whitespace-nowrap ${isActive ? 'text-cobalt' : 'text-ink/60 hover:text-ink'}`;
 
   return (
     <div className="min-h-screen pb-20 md:pb-0">
@@ -51,58 +51,68 @@ export default function AppLayout({ children }) {
       </a>
       <header className="sticky top-0 z-40 bg-white border-b border-line">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="flex items-center gap-3 py-2.5">
-            <Link to="/" className="flex items-center gap-2.5 mr-auto">
-              <Crest className="w-10 h-10 shrink-0" />
-              <span className="leading-tight">
-                <span className="block font-display font-bold text-lg">Puatc Ground</span>
-                <span className="hidden sm:block text-[13px] text-ink/60 -mt-0.5">ระบบลงชื่อตัวแทนทำกิจกรรม · วิทยาลัย</span>
-              </span>
-            </Link>
-            <span className="hidden lg:block text-sm text-ink/50">{fmtDate(todayStr())}</span>
-            <Link to="/profile" className="hidden md:block" aria-label="โปรไฟล์">
-              <Avatar url={profile?.avatar_url} name={fullName(profile)} size="w-8 h-8 text-xs" />
-            </Link>
-            <button onClick={logout} aria-label="ออกจากระบบ" className="hidden md:flex p-2 rounded-lg text-ink/60 hover:bg-line/60">
-              <LogOut className="w-5 h-5" />
-            </button>
-            <button onClick={() => setMenuOpen(true)} className="md:hidden flex items-center gap-1 px-3 min-h-11 rounded-xl hover:bg-line/60 text-sm font-medium">
-              <Menu className="w-5 h-5" /> เมนู
-            </button>
-          </div>
-          <nav className="hidden md:flex items-center gap-1 pb-1.5" aria-label="เมนูหลัก">
-            {MAIN_LINKS.map((l) => (
-              <NavLink key={l.to} to={l.to} end={l.end} className={navLinkClass}>{l.label}</NavLink>
-            ))}
-            {manageLinks.length > 0 && (
-              <div className="relative">
-                <button
-                  onClick={() => setManageOpen((v) => !v)}
-                  aria-expanded={manageOpen}
-                  className="px-3 py-2 rounded-lg text-sm font-medium text-ink/70 hover:bg-line/50 flex items-center gap-1"
-                >
-                  จัดการ <ChevronDown className="w-4 h-4" />
-                </button>
-                {manageOpen && (
-                  <>
-                    <div className="fixed inset-0 z-10" onClick={() => setManageOpen(false)} aria-hidden />
-                    <div className="absolute left-0 top-full mt-1 z-20 bg-white border border-line rounded-xl shadow-lg py-1 min-w-44">
-                      {manageLinks.map((l) => (
-                        <NavLink
-                          key={l.to}
-                          to={l.to}
-                          onClick={() => setManageOpen(false)}
-                          className={({ isActive }) => `flex items-center gap-2 px-4 py-2.5 text-sm ${isActive ? 'text-cobalt bg-cobalt/10' : 'text-ink/80 hover:bg-bg'}`}
-                        >
-                          <l.icon className="w-4 h-4" /> {l.label}
-                        </NavLink>
-                      ))}
-                    </div>
-                  </>
-                )}
+          <div className="flex items-center gap-4 h-14">
+            {/* Logo */}
+            <Link to="/" className="flex items-center gap-2.5 shrink-0">
+              <Crest className="w-9 h-9 shrink-0" />
+              <div className="leading-tight hidden sm:block">
+                <span className="block font-display font-bold text-base">Puatc Ground</span>
+                <span className="block text-[11px] text-ink/50 -mt-0.5">ระบบลงชื่อตัวแทนทำกิจกรรม · วิทยาลัย</span>
               </div>
-            )}
-          </nav>
+            </Link>
+
+            {/* Divider */}
+            <div className="hidden md:block w-px h-5 bg-line shrink-0" />
+
+            {/* Nav links — desktop */}
+            <nav className="hidden md:flex items-center gap-0.5 flex-1 min-w-0" aria-label="เมนูหลัก">
+              {MAIN_LINKS.map((l) => (
+                <NavLink key={l.to} to={l.to} end={l.end} className={navLinkClass}>{l.label}</NavLink>
+              ))}
+              {manageLinks.length > 0 && (
+                <div className="relative">
+                  <button
+                    onClick={() => setManageOpen((v) => !v)}
+                    aria-expanded={manageOpen}
+                    className="px-3 py-2 text-sm font-medium text-ink/60 hover:text-ink flex items-center gap-1 whitespace-nowrap"
+                  >
+                    จัดการ <ChevronDown className="w-3.5 h-3.5" />
+                  </button>
+                  {manageOpen && (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setManageOpen(false)} aria-hidden />
+                      <div className="absolute left-0 top-full mt-1 z-50 bg-white border border-line rounded-xl shadow-lg py-1 min-w-44">
+                        {manageLinks.map((l) => (
+                          <NavLink
+                            key={l.to}
+                            to={l.to}
+                            onClick={() => setManageOpen(false)}
+                            className={({ isActive }) => `flex items-center gap-2 px-4 py-2.5 text-sm ${isActive ? 'text-cobalt bg-cobalt/10' : 'text-ink/80 hover:bg-bg'}`}
+                          >
+                            <l.icon className="w-4 h-4" /> {l.label}
+                          </NavLink>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+            </nav>
+
+            {/* Right side */}
+            <div className="ml-auto flex items-center gap-2 shrink-0">
+              <span className="hidden lg:block text-sm text-ink/40">{fmtDate(todayStr())}</span>
+              <Link to="/profile" className="hidden md:block" aria-label="โปรไฟล์">
+                <Avatar url={profile?.avatar_url} name={fullName(profile)} size="w-8 h-8 text-xs" />
+              </Link>
+              <button onClick={logout} aria-label="ออกจากระบบ" className="hidden md:flex p-2 rounded-lg text-ink/50 hover:bg-line/60">
+                <LogOut className="w-5 h-5" />
+              </button>
+              <button onClick={() => setMenuOpen(true)} className="md:hidden flex items-center gap-1 px-3 min-h-10 rounded-xl hover:bg-line/60 text-sm font-medium">
+                <Menu className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
         </div>
       </header>
 

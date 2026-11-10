@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom';
 import { StatusBadge, LevelBadge, RegisteredBadge } from './Badges.jsx';
 
 export default function EventCard({ event, levels, status, registered }) {
-  const levelLabel = levels.length > 1 ? 'รวม' : levels[0]?.level;
   const date = levels.map((l) => l.event_date).filter(Boolean).sort()[0];
   const d = date ? new Date(`${date}T00:00:00+07:00`) : null;
   const day = d ? d.toLocaleDateString('th-TH', { day: 'numeric' }) : '';
@@ -26,7 +25,7 @@ export default function EventCard({ event, levels, status, registered }) {
             <p className="text-xs text-ink/50 mt-1">{event.event_categories.name}</p>
           )}
           <div className="flex flex-wrap gap-1.5 mt-2.5">
-            {levelLabel && <LevelBadge level={levelLabel} />}
+            {levels.map((l) => <LevelBadge key={l.id} level={l.level} />)}
             <StatusBadge status={status} />
             {registered && <RegisteredBadge />}
           </div>

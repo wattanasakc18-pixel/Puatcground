@@ -124,7 +124,13 @@ export default function RosterPage() {
             ))}
           </div>
 
-          {countsQuery.data && <DeptSummaryBar counts={countsQuery.data} />}
+          {countsQuery.data && (
+            <DeptSummaryBar
+              counts={level === 'all' ? countsQuery.data : countsQuery.data.filter((c) => c.level === level)}
+              departments={departmentsQuery.data ?? []}
+              eventLevels={level === 'all' ? (event?.event_levels ?? []) : (event?.event_levels ?? []).filter((l) => l.level === level)}
+            />
+          )}
 
           <div className="bg-white rounded-2xl border border-line overflow-hidden">
             {rosterQuery.isPending || fieldsQuery.isPending ? <LoadingState /> : rosterQuery.isError ? (
