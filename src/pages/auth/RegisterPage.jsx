@@ -11,6 +11,7 @@ import { LEVELS, TITLES, MAX_AVATAR_SIZE } from '../../lib/constants.js';
 import Button from '../../components/ui/Button.jsx';
 import { Field, Input, Select } from '../../components/ui/Field.jsx';
 import { LoadingState } from '../../components/ui/States.jsx';
+import AuthPanel from '../../components/auth/AuthPanel.jsx';
 import { useToast } from '../../components/ui/Toast.jsx';
 
 const initial = {
@@ -130,118 +131,123 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 py-8">
-      <div className="w-full max-w-lg">
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold">สมัครสมาชิก</h1>
-          <p className="text-ink/60 text-sm mt-1">Puatc Ground — ระบบลงชื่อตัวแทนทำกิจกรรม</p>
-        </div>
-        <form onSubmit={submit} className="bg-white rounded-2xl border border-line p-5 space-y-4">
-          {submitError && <p role="alert" className="text-sm text-coral bg-coral/10 rounded-xl px-3 py-2">{submitError}</p>}
-
-          <div className="flex items-center gap-4">
-            <label className="relative w-20 h-20 rounded-2xl bg-bg border border-dashed border-line flex items-center justify-center overflow-hidden cursor-pointer shrink-0">
-              {avatarPreview
-                ? <img src={avatarPreview} alt="ตัวอย่างรูปโปรไฟล์" className="w-full h-full object-cover" />
-                : <ImagePlus className="w-7 h-7 text-ink/40" />}
-              <input type="file" accept="image/*" onChange={pickAvatar} className="absolute inset-0 opacity-0 cursor-pointer" aria-label="เลือกรูปโปรไฟล์" />
-            </label>
-            <div className="text-sm text-ink/60">
-              <p className="font-medium text-ink">รูปโปรไฟล์ (ไม่บังคับ)</p>
-              <p>ไฟล์รูปไม่เกิน 2 MB</p>
-              {errors.avatar && <p className="text-coral">{errors.avatar}</p>}
-            </div>
-          </div>
-
-          <Field label="รหัสนักศึกษา (ใช้เป็น Username)" htmlFor="student_code" required error={errors.student_code}>
-            <Input id="student_code" value={form.student_code} onChange={set('student_code')} autoComplete="username" />
-          </Field>
-
-          <div className="grid grid-cols-3 gap-3">
-            <Field label="คำนำหน้า" htmlFor="title" required error={errors.title}>
-              <Select id="title" value={form.title} onChange={set('title')}>
-                <option value="">เลือก</option>
-                {TITLES.map((t) => <option key={t} value={t}>{t}</option>)}
-              </Select>
-            </Field>
-            <Field label="ชื่อ" htmlFor="first_name" required error={errors.first_name}>
-              <Input id="first_name" value={form.first_name} onChange={set('first_name')} />
-            </Field>
-            <Field label="นามสกุล" htmlFor="last_name" required error={errors.last_name}>
-              <Input id="last_name" value={form.last_name} onChange={set('last_name')} />
-            </Field>
-          </div>
-
-          <Field label="แผนกวิชา" htmlFor="department" required error={errors.department_id || deptError}>
-            <Select id="department" value={form.department_id} onChange={set('department_id')} disabled={deptLoading}>
-              <option value="">{deptLoading ? 'กำลังโหลดแผนกวิชา...' : 'เลือกแผนกวิชา'}</option>
-              {departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
-            </Select>
-            {deptError && (
-              <Button variant="secondary" onClick={loadDepartments} className="mt-2 text-sm">ลองโหลดแผนกใหม่</Button>
-            )}
-          </Field>
-
-          <Field label="ระดับชั้น" required error={errors.level}>
-            <div className="grid grid-cols-2 gap-2" role="group" aria-label="ระดับชั้น">
-              {LEVELS.map((lv) => (
-                <button
-                  key={lv}
-                  type="button"
-                  onClick={() => setForm((f) => ({ ...f, level: lv }))}
-                  aria-pressed={form.level === lv}
-                  className={`min-h-11 rounded-xl border font-medium transition-colors ${form.level === lv ? 'bg-cobalt text-white border-cobalt' : 'bg-white border-line'}`}
-                >
-                  {lv}
-                </button>
-              ))}
-            </div>
-          </Field>
-
-          <Field label="ชั้นปี/ห้อง" htmlFor="class_room" required error={errors.class_room}>
-            <Input id="class_room" value={form.class_room} onChange={set('class_room')} placeholder="เช่น 2/1" maxLength={10} />
-          </Field>
-
-          <div className="grid sm:grid-cols-2 gap-3">
-            <Field label="อีเมลติดต่อ" htmlFor="email" required error={errors.email}>
-              <Input id="email" type="email" value={form.email} onChange={set('email')} autoComplete="email" />
-            </Field>
-            <Field label="เบอร์โทร (ไม่บังคับ)" htmlFor="phone">
-              <Input id="phone" type="tel" value={form.phone} onChange={set('phone')} autoComplete="tel" />
-            </Field>
-          </div>
-
-          <Field label="รหัสผ่าน" htmlFor="password" required error={errors.password}>
-            <div className="relative">
-              <Input
-                id="password"
-                type={showPassword ? 'text' : 'password'}
-                value={form.password}
-                onChange={set('password')}
-                autoComplete="new-password"
-                className="pr-11"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword((v) => !v)}
-                aria-label={showPassword ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'}
-                className="absolute right-0 top-0 h-11 w-11 flex items-center justify-center text-ink/50"
-              >
-                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-              </button>
-            </div>
-          </Field>
-          <Field label="ยืนยันรหัสผ่าน" htmlFor="confirm" required error={errors.confirm}>
-            <Input id="confirm" type={showPassword ? 'text' : 'password'} value={form.confirm} onChange={set('confirm')} autoComplete="new-password" />
-          </Field>
-
-          <Button type="submit" loading={submitting} className="w-full">สมัครสมาชิก</Button>
-          <p className="text-sm text-center text-ink/60">
-            มีบัญชีแล้ว?{' '}
-            <Link to="/login" className="text-cobalt font-medium">เข้าสู่ระบบ</Link>
-          </p>
-        </form>
+    <div className="min-h-screen grid lg:grid-cols-2 bg-bg">
+      <div className="lg:sticky lg:top-0 lg:h-screen">
+        <AuthPanel note="สมัครครั้งเดียว ใช้ลงชื่อได้ทุกกิจกรรม" />
       </div>
+      <main className="flex justify-center p-5 sm:p-10">
+        <div className="w-full max-w-lg">
+          <div className="mb-6">
+            <h2 className="text-3xl font-bold">สมัครสมาชิก</h2>
+            <p className="text-ink/60 text-sm mt-1">กรอกข้อมูลให้ครบ แล้วเริ่มลงชื่อตัวแทนได้เลย</p>
+          </div>
+          <form onSubmit={submit} className="bg-white rounded-2xl border border-line p-5 sm:p-6 space-y-4 shadow-sm">
+            {submitError && <p role="alert" className="text-sm text-coral bg-coral/10 rounded-xl px-3 py-2">{submitError}</p>}
+
+            <div className="flex items-center gap-4">
+              <label className="relative w-20 h-20 rounded-2xl bg-bg border border-dashed border-line flex items-center justify-center overflow-hidden cursor-pointer shrink-0">
+                {avatarPreview
+                  ? <img src={avatarPreview} alt="ตัวอย่างรูปโปรไฟล์" className="w-full h-full object-cover" />
+                  : <ImagePlus className="w-7 h-7 text-ink/40" />}
+                <input type="file" accept="image/*" onChange={pickAvatar} className="absolute inset-0 opacity-0 cursor-pointer" aria-label="เลือกรูปโปรไฟล์" />
+              </label>
+              <div className="text-sm text-ink/60">
+                <p className="font-medium text-ink">รูปโปรไฟล์ (ไม่บังคับ)</p>
+                <p>ไฟล์รูปไม่เกิน 2 MB</p>
+                {errors.avatar && <p className="text-coral">{errors.avatar}</p>}
+              </div>
+            </div>
+
+            <Field label="รหัสนักศึกษา (ใช้เป็น Username)" htmlFor="student_code" required error={errors.student_code}>
+              <Input id="student_code" value={form.student_code} onChange={set('student_code')} autoComplete="username" />
+            </Field>
+
+            <div className="grid grid-cols-3 gap-3">
+              <Field label="คำนำหน้า" htmlFor="title" required error={errors.title}>
+                <Select id="title" value={form.title} onChange={set('title')}>
+                  <option value="">เลือก</option>
+                  {TITLES.map((t) => <option key={t} value={t}>{t}</option>)}
+                </Select>
+              </Field>
+              <Field label="ชื่อ" htmlFor="first_name" required error={errors.first_name}>
+                <Input id="first_name" value={form.first_name} onChange={set('first_name')} />
+              </Field>
+              <Field label="นามสกุล" htmlFor="last_name" required error={errors.last_name}>
+                <Input id="last_name" value={form.last_name} onChange={set('last_name')} />
+              </Field>
+            </div>
+
+            <Field label="แผนกวิชา" htmlFor="department" required error={errors.department_id || deptError}>
+              <Select id="department" value={form.department_id} onChange={set('department_id')} disabled={deptLoading}>
+                <option value="">{deptLoading ? 'กำลังโหลดแผนกวิชา...' : 'เลือกแผนกวิชา'}</option>
+                {departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+              </Select>
+              {deptError && (
+                <Button variant="secondary" onClick={loadDepartments} className="mt-2 text-sm">ลองโหลดแผนกใหม่</Button>
+              )}
+            </Field>
+
+            <Field label="ระดับชั้น" required error={errors.level}>
+              <div className="grid grid-cols-2 gap-2" role="group" aria-label="ระดับชั้น">
+                {LEVELS.map((lv) => (
+                  <button
+                    key={lv}
+                    type="button"
+                    onClick={() => setForm((f) => ({ ...f, level: lv }))}
+                    aria-pressed={form.level === lv}
+                    className={`min-h-11 rounded-xl border font-medium transition-colors ${form.level === lv ? 'bg-cobalt text-white border-cobalt' : 'bg-white border-line'}`}
+                  >
+                    {lv}
+                  </button>
+                ))}
+              </div>
+            </Field>
+
+            <Field label="ชั้นปี/ห้อง" htmlFor="class_room" required error={errors.class_room}>
+              <Input id="class_room" value={form.class_room} onChange={set('class_room')} placeholder="เช่น 2/1" maxLength={10} />
+            </Field>
+
+            <div className="grid sm:grid-cols-2 gap-3">
+              <Field label="อีเมลติดต่อ" htmlFor="email" required error={errors.email}>
+                <Input id="email" type="email" value={form.email} onChange={set('email')} autoComplete="email" />
+              </Field>
+              <Field label="เบอร์โทร (ไม่บังคับ)" htmlFor="phone">
+                <Input id="phone" type="tel" value={form.phone} onChange={set('phone')} autoComplete="tel" />
+              </Field>
+            </div>
+
+            <Field label="รหัสผ่าน" htmlFor="password" required error={errors.password}>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={form.password}
+                  onChange={set('password')}
+                  autoComplete="new-password"
+                  className="pr-11"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-label={showPassword ? 'ซ่อนรหัสผ่าน' : 'แสดงรหัสผ่าน'}
+                  className="absolute right-0 top-0 h-11 w-11 flex items-center justify-center text-ink/50"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+            </Field>
+            <Field label="ยืนยันรหัสผ่าน" htmlFor="confirm" required error={errors.confirm}>
+              <Input id="confirm" type={showPassword ? 'text' : 'password'} value={form.confirm} onChange={set('confirm')} autoComplete="new-password" />
+            </Field>
+
+            <Button type="submit" loading={submitting} className="w-full min-h-12 text-base rounded-xl">สมัครสมาชิก</Button>
+            <p className="text-sm text-center text-ink/60">
+              มีบัญชีแล้ว?{' '}
+              <Link to="/login" className="text-cobalt font-semibold">เข้าสู่ระบบ</Link>
+            </p>
+          </form>
+        </div>
+      </main>
     </div>
   );
 }
