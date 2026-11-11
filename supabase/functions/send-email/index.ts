@@ -1,12 +1,10 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
-import { SmtpClient } from 'https://deno.land/x/smtp@v0.7.0/mod.ts';
 
-const GMAIL_USER = Deno.env.get('GMAIL_USER')!;
-const GMAIL_PASS = Deno.env.get('GMAIL_PASS')!;
+const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY')!;
+const FROM_EMAIL = Deno.env.get('FROM_EMAIL') ?? 'puatc8508@gmail.com';
 const FROM_NAME = 'Puatc Ground';
 
 const TEMPLATES: Record<string, (data: Record<string, string>) => { subject: string; html: string }> = {
-  // ลงทะเบียนกิจกรรมสำเร็จ
   registered: (d) => ({
     subject: `✅ ลงชื่อกิจกรรม "${d.eventTitle}" สำเร็จแล้ว`,
     html: `
@@ -26,7 +24,6 @@ const TEMPLATES: Record<string, (data: Record<string, string>) => { subject: str
       </div>`,
   }),
 
-  // กิจกรรมใกล้ปิดรับ
   closing_soon: (d) => ({
     subject: `⏰ กิจกรรม "${d.eventTitle}" ใกล้ปิดรับสมัครแล้ว`,
     html: `
@@ -43,7 +40,6 @@ const TEMPLATES: Record<string, (data: Record<string, string>) => { subject: str
       </div>`,
   }),
 
-  // กิจกรรมเสร็จสิ้น
   event_ended: (d) => ({
     subject: `🎉 กิจกรรม "${d.eventTitle}" เสร็จสิ้นแล้ว`,
     html: `
@@ -60,7 +56,6 @@ const TEMPLATES: Record<string, (data: Record<string, string>) => { subject: str
       </div>`,
   }),
 
-  // กิจกรรมเปิดรับแล้ว
   event_open: (d) => ({
     subject: `🔔 กิจกรรม "${d.eventTitle}" เปิดรับสมัครแล้ว`,
     html: `
@@ -81,7 +76,6 @@ const TEMPLATES: Record<string, (data: Record<string, string>) => { subject: str
       </div>`,
   }),
 
-  // admin รีเซ็ตรหัสผ่าน
   password_reset: (d) => ({
     subject: `🔑 รหัสผ่านของคุณถูกรีเซ็ตแล้ว`,
     html: `
@@ -126,23 +120,25 @@ serve(async (req) => {
 
     const { subject, html } = template(data ?? {});
 
-    const client = new SmtpClient();
-    await client.connectTLS({
-      hostname: 'smtp.gmail.com',
-      port: 465,
-      username: GMAIL_USER,
-      password: GMAIL_PASS,
+    // เรียก Brevo API
+    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'api-key': BREVO_API_KEY,
+      },
+      body: JSON.stringify({
+        sender: { name: FROM_NAME, email: FROM_EMAIL },
+        to: [{ email: to }],
+        subject,
+        htmlContent: html,
+      }),
     });
 
-    await client.send({
-      from: `${FROM_NAME} <${GMAIL_USER}>`,
-      to,
-      subject,
-      content: 'auto',
-      html,
-    });
-
-    await client.close();
+    if (!res.ok) {
+      const err = await res.text();
+      throw new Error(`Brevo error: ${err}`);
+    }
 
     return new Response(JSON.stringify({ ok: true }), {
       headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
