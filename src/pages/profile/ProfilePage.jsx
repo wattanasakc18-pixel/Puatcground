@@ -11,7 +11,7 @@ import { listFormFieldsForEvents } from '../../api/events.js';
 import { cancelRegistration, updateAnswers } from '../../api/registrations.js';
 import { fieldsForLevel, validateAnswers } from '../../lib/answers.js';
 import { fullName, fmtDate, fmtDateTime } from '../../lib/format.js';
-import { LEVELS, TITLES, MAX_AVATAR_SIZE } from '../../lib/constants.js';
+import { LEVELS, TITLES, MAX_AVATAR_SIZE, ROLE_LABELS } from '../../lib/constants.js';
 import { toThaiError } from '../../lib/errors.js';
 import Button from '../../components/ui/Button.jsx';
 import Modal from '../../components/ui/Modal.jsx';
@@ -196,6 +196,17 @@ export default function ProfilePage() {
             <p className="text-white/70 text-xs mb-0.5">รหัสนักศึกษา {profile?.student_code}</p>
             <p className="text-xl font-bold leading-snug">{fullName(profile)}</p>
             <div className="flex flex-wrap gap-2 mt-2">
+              {profile?.role && (
+                <span className={`text-xs font-semibold rounded-full px-2.5 py-0.5 ${
+                  profile.role === 'admin'
+                    ? 'bg-sun/80 text-white'
+                    : profile.role === 'organizer'
+                    ? 'bg-leaf/70 text-white'
+                    : 'bg-white/20 text-white'
+                }`}>
+                  {ROLE_LABELS[profile.role] ?? profile.role}
+                </span>
+              )}
               {profile?.level && (
                 <span className="bg-white/20 text-white text-xs font-medium rounded-full px-2.5 py-0.5">{profile.level}</span>
               )}

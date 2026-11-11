@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Search, Users, CalendarCheck } from 'lucide-react';
+import { Search, Users, CalendarCheck, KeyRound } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useUsers, useDepartments, useEvents, useOrganizerLevels } from '../../hooks/useQueries.js';
 import { setUserRole } from '../../api/profiles.js';
@@ -113,6 +113,10 @@ export default function UsersPage() {
   const queryClient = useQueryClient();
   const [roleChange, setRoleChange] = useState(null);
   const [orgTarget, setOrgTarget] = useState(null);
+  const [resetTarget, setResetTarget] = useState(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [resetError, setResetError] = useState('');
+  const [resetting, setResetting] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const requestRoleChange = (target, newRole) => {
@@ -136,6 +140,27 @@ export default function UsersPage() {
       toast(toThaiError(err, 'เปลี่ยนบทบาทไม่สำเร็จ'), 'error');
     } finally {
       setBusy(false);
+    }
+  };
+
+  const openReset = (u) => {
+    setResetTarget(u);
+    setNewPassword('');
+    setResetError('');
+  };
+
+  const confirmReset = async () => {
+    if (newPassword.length < 8) { setResetError('รหัสผ่านต้องยาวอย่างน้อย 8 ตัวอักษร'); return; }
+    setResetting(true);
+    setResetError('');
+    try {
+      await resetUserPassword(resetTarget.id, newPassword);
+      toast(`รีเซ็ตรหัสผ่านของ ${fullName(resetTarget)} แล้ว`);
+      setResetTarget(null);
+    } catch (err) {
+      setResetError(toThaiError(err, 'รีเซ็ตรหัสผ่านไม่สำเร็จ'));
+    } finally {
+      setResetting(false);
     }
   };
 
@@ -201,6 +226,9 @@ export default function UsersPage() {
                 <Button variant="secondary" onClick={() => setOrgTarget(u)} className="text-sm">
                   <CalendarCheck className="w-4 h-4" /> ดูแลกิจกรรม
                 </Button>
+                <Button variant="secondary" onClick={() => openReset(u)} className="text-sm">
+                  <KeyRound className="w-4 h-4" /> รีเซ็ตรหัส
+                </Button>
               </div>
             </div>
           ))}
@@ -218,6 +246,37 @@ export default function UsersPage() {
       />
 
       {orgTarget && <OrganizerModal target={orgTarget} onClose={() => setOrgTarget(null)} />}
+
+      {/* Modal รีเซ็ตรหัสผ่าน */}
+      <Modal open={Boolean(resetTarget)} onClose={() => !resetting && setResetTarget(null)} title={`รีเซ็ตรหัสผ่าน: ${fullName(resetTarget)}`}>
+        <div className="space-y-4">
+          <p className="text-sm text-ink/60">
+            กำหนดรหัสผ่านใหม่ให้ <span className="font-medium text-ink">{fullName(resetTarget)}</span> (รหัสนักศึกษา {resetTarget?.student_code})
+          </p>
+          <div>
+            <label className="block text-sm font-medium mb-1.5">
+              รหัสผ่านใหม่ <span className="text-coral">*</span>
+            </label>
+            <Input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder="อย่างน้อย 8 ตัวอักษร"
+              autoComplete="new-password"
+              disabled={resetting}
+            />
+          </div>
+          {resetError && (
+            <p role="alert" className="text-sm text-coral bg-coral/10 rounded-xl px-3 py-2">{resetError}</p>
+          )}
+          <div className="flex gap-2 justify-end">
+            <Button variant="secondary" onClick={() => setResetTarget(null)} disabled={resetting}>ยกเลิก</Button>
+            <Button onClick={confirmReset} loading={resetting}>
+              <KeyRound className="w-4 h-4" /> ยืนยันรีเซ็ต
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

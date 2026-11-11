@@ -44,3 +44,11 @@ export async function setUserRole(userId, role) {
   const { error } = await supabase.from('profiles').update({ role }).eq('id', userId);
   if (error) throw error;
 }
+
+export async function resetUserPassword(userId, newPassword) {
+  const { error } = await supabase.rpc('admin_reset_password', {
+    p_user_id: userId,
+    p_new_password: newPassword,
+  });
+  if (error) throw error;
+}
