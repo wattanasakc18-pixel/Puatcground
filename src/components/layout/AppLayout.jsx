@@ -13,7 +13,6 @@ const MAIN_LINKS = [
   { to: '/events', label: 'กิจกรรมและลงชื่อ', icon: CalendarDays },
   { to: '/roster', label: 'รายชื่อตัวแทน', icon: ListChecks },
   { to: '/about', label: 'เกี่ยวกับเรา', icon: Info },
-  { to: '/profile', label: 'โปรไฟล์', icon: User },
 ];
 
 const MANAGE_LINKS = [
@@ -134,6 +133,14 @@ export default function AppLayout({ children }) {
               {l.label === 'กิจกรรมและลงชื่อ' ? 'กิจกรรม' : l.label}
             </NavLink>
           ))}
+          {/* โปรไฟล์ — กดที่รูปโปรไฟล์ */}
+          <NavLink
+            to="/profile"
+            className={({ isActive }) => `flex flex-col items-center justify-center gap-0.5 min-h-14 py-1.5 text-[11px] border-t-2 ${isActive ? 'text-cobalt font-semibold border-cobalt' : 'text-ink/50 border-transparent'}`}
+          >
+            <Avatar url={profile?.avatar_url} name={fullName(profile)} size="w-6 h-6 text-[10px]" />
+            โปรไฟล์
+          </NavLink>
         </div>
       </nav>
 

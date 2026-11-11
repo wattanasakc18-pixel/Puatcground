@@ -5,6 +5,7 @@ import { Pencil, Trash2, Plus, Users, Calendar, Clock, ChevronLeft } from 'lucid
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useEvent, useFormFields, useMyRegistrations, useDeptCounts, useRoster } from '../../hooks/useQueries.js';
 import { register, cancelRegistration, updateAnswers } from '../../api/registrations.js';
+import { emailRegistered } from '../../api/email.js';
 import { fieldsForLevel, validateAnswers } from '../../lib/answers.js';
 import { registrationStatus, STATUS_META, STATUS_REASONS } from '../../lib/eventStatus.js';
 import { fmtDate, fmtDateTime, fullName } from '../../lib/format.js';
@@ -336,6 +337,16 @@ export default function EventDetailPage() {
       } else {
         await register(effectiveLevel.id, user.id, answers);
         toast('ลงชื่อเป็นตัวแทนสำเร็จ');
+        // ส่งอีเมลยืนยันการลงชื่อ
+        if (profile?.email) {
+          emailRegistered({
+            email: profile.email,
+            name: `${profile.title ?? ''}${profile.first_name ?? ''} ${profile.last_name ?? ''}`.trim(),
+            eventTitle: event.title,
+            eventDate: fmtDate(effectiveLevel.event_date),
+            level: effectiveLevel.level,
+          }).catch(() => {});
+        }
       }
       invalidate();
       setFormOpen(false);

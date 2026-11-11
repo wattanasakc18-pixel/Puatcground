@@ -3,7 +3,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Search, Users, CalendarCheck, KeyRound } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useUsers, useDepartments, useEvents, useOrganizerLevels } from '../../hooks/useQueries.js';
-import { setUserRole } from '../../api/profiles.js';
+import { setUserRole, resetUserPassword } from '../../api/profiles.js';
+import { emailPasswordReset } from '../../api/email.js';
 import { addOrganizer, removeOrganizer } from '../../api/events.js';
 import { LEVELS, ROLE_LABELS } from '../../lib/constants.js';
 import { fullName } from '../../lib/format.js';
@@ -155,6 +156,14 @@ export default function UsersPage() {
     setResetError('');
     try {
       await resetUserPassword(resetTarget.id, newPassword);
+      // ส่งอีเมลแจ้งรหัสผ่านใหม่ (ไม่บล็อกถ้าส่งไม่สำเร็จ)
+      if (resetTarget.email) {
+        emailPasswordReset({
+          email: resetTarget.email,
+          name: fullName(resetTarget),
+          newPassword,
+        }).catch(() => {});
+      }
       toast(`รีเซ็ตรหัสผ่านของ ${fullName(resetTarget)} แล้ว`);
       setResetTarget(null);
     } catch (err) {
