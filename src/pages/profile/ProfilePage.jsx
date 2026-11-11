@@ -184,20 +184,20 @@ export default function ProfilePage() {
   const deptChanged = form.department_id && form.department_id !== profile?.department_id;
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-4 max-w-4xl mx-auto">
 
       {/* ── Hero Profile Card ── */}
-      <section className="bg-gradient-to-br from-cobalt to-cobalt/80 rounded-2xl p-6 text-white">
-        <div className="flex items-start gap-5">
+      <section className="bg-gradient-to-br from-cobalt to-cobalt/80 rounded-2xl p-4 sm:p-6 text-white">
+        <div className="flex items-center gap-3 sm:gap-5">
           <div className="relative shrink-0">
-            <Avatar url={profile?.avatar_url} name={fullName(profile)} size="w-20 h-20 text-2xl" />
+            <Avatar url={profile?.avatar_url} name={fullName(profile)} size="w-14 h-14 sm:w-20 sm:h-20 text-lg sm:text-2xl" />
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-white/70 text-xs mb-0.5">รหัสนักศึกษา {profile?.student_code}</p>
-            <p className="text-xl font-bold leading-snug">{fullName(profile)}</p>
-            <div className="flex flex-wrap gap-2 mt-2">
+            <p className="text-base sm:text-xl font-bold leading-snug">{fullName(profile)}</p>
+            <div className="flex flex-wrap gap-1.5 mt-1.5">
               {profile?.role && (
-                <span className={`text-xs font-semibold rounded-full px-2.5 py-0.5 ${
+                <span className={`text-xs font-semibold rounded-full px-2 py-0.5 ${
                   profile.role === 'admin'
                     ? 'bg-sun/80 text-white'
                     : profile.role === 'organizer'
@@ -208,40 +208,40 @@ export default function ProfilePage() {
                 </span>
               )}
               {profile?.level && (
-                <span className="bg-white/20 text-white text-xs font-medium rounded-full px-2.5 py-0.5">{profile.level}</span>
+                <span className="bg-white/20 text-white text-xs font-medium rounded-full px-2 py-0.5">{profile.level}</span>
               )}
               {profile?.department_name && (
-                <span className="bg-white/20 text-white text-xs font-medium rounded-full px-2.5 py-0.5">{profile.department_name}</span>
+                <span className="bg-white/20 text-white text-xs font-medium rounded-full px-2 py-0.5">{profile.department_name}</span>
               )}
               {profile?.class_room && (
-                <span className="bg-white/20 text-white text-xs font-medium rounded-full px-2.5 py-0.5">ห้อง {profile.class_room}</span>
+                <span className="bg-white/20 text-white text-xs font-medium rounded-full px-2 py-0.5">ห้อง {profile.class_room}</span>
               )}
             </div>
           </div>
-          <Button variant="secondary" onClick={openEdit} className="shrink-0">
-            <Pencil className="w-4 h-4" /> แก้ไข
+          <Button variant="secondary" onClick={openEdit} className="shrink-0 !px-3 !min-h-9 text-sm">
+            <Pencil className="w-3.5 h-3.5" /> แก้ไข
           </Button>
         </div>
 
         {/* Info row */}
-        <div className="grid sm:grid-cols-2 gap-2 mt-5 pt-5 border-t border-white/20 text-sm">
-          <div className="flex items-center gap-2 text-white/80">
+        <div className="flex flex-wrap gap-x-4 gap-y-1 mt-3 pt-3 border-t border-white/20 text-xs sm:text-sm">
+          <div className="flex items-center gap-1.5 text-white/80">
             <span className="text-white/50">อีเมล</span>
-            <span className="font-medium truncate">{profile?.email || '-'}</span>
+            <span className="font-medium truncate max-w-[180px]">{profile?.email || '-'}</span>
           </div>
-          <div className="flex items-center gap-2 text-white/80">
+          <div className="flex items-center gap-1.5 text-white/80">
             <span className="text-white/50">เบอร์โทร</span>
             <span className="font-medium">{profile?.phone || '-'}</span>
           </div>
         </div>
       </section>
 
-      {/* ── Bottom two columns ── */}
-      <div className="grid lg:grid-cols-[1fr_320px] gap-6 items-start">
+      {/* ── เปลี่ยนรหัสผ่าน (mobile: full width, desktop: sidebar) ── */}
+      <div className="grid lg:grid-cols-[1fr_300px] gap-4 items-start">
 
         {/* ── ประวัติการลงชื่อ ── */}
-        <section className="bg-white rounded-2xl border border-line p-5" aria-label="ประวัติการลงชื่อ">
-          <h2 className="font-semibold mb-4">ประวัติการลงชื่อ</h2>
+        <section className="bg-white rounded-2xl border border-line p-4 sm:p-5" aria-label="ประวัติการลงชื่อ">
+          <h2 className="font-semibold mb-3 text-sm sm:text-base">ประวัติการลงชื่อ</h2>
           {regsQuery.isPending ? <LoadingState /> : regsQuery.isError ? (
             <ErrorState message={toThaiError(regsQuery.error)} onRetry={() => regsQuery.refetch()} />
           ) : regs.length === 0 ? (
@@ -252,36 +252,35 @@ export default function ProfilePage() {
               action={<Link to="/events"><Button variant="secondary">ดูกิจกรรม</Button></Link>}
             />
           ) : (
-            <ul className="space-y-3">
+            <ul className="space-y-2">
               {regs.map((reg) => {
                 const cancelled = Boolean(reg.cancelled_at);
                 const el = reg.event_levels;
                 const ev = el?.events;
                 const fields = fieldsForLevel(fieldsQuery.data?.filter((f) => f.event_id === el?.event_id), el?.level);
                 return (
-                  <li key={reg.id} className={`border border-line rounded-xl p-4 ${cancelled ? 'opacity-50' : ''}`}>
-                    <div className="flex items-start justify-between gap-2 flex-wrap">
-                      <div>
-                        <Link to={`/events/${ev?.id}`} className="font-medium text-cobalt hover:underline">{ev?.title}</Link>
-                        <div className="flex flex-wrap items-center gap-2 mt-1 text-sm text-ink/60">
+                  <li key={reg.id} className={`border border-line rounded-xl p-3 sm:p-4 ${cancelled ? 'opacity-50' : ''}`}>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <Link to={`/events/${ev?.id}`} className="font-medium text-cobalt hover:underline text-sm">{ev?.title}</Link>
+                        <div className="flex flex-wrap items-center gap-1.5 mt-1 text-xs text-ink/60">
                           <LevelBadge level={el?.level} />
                           <span>จัด {fmtDate(el?.event_date)}</span>
-                          <span>ลงชื่อ {fmtDateTime(reg.created_at)}</span>
-                          {cancelled && <span className="rounded-full bg-ink/10 px-2.5 py-0.5 text-xs">ยกเลิกแล้ว</span>}
+                          {cancelled && <span className="rounded-full bg-ink/10 px-2 py-0.5">ยกเลิกแล้ว</span>}
                         </div>
                       </div>
                     </div>
-                    <div className="mt-2">
+                    <div className="mt-1.5">
                       <AnswersSummary fields={fields} answers={reg.answers} />
                     </div>
                     {!cancelled && canModify(reg) && (
-                      <div className="flex gap-2 mt-3">
-                        <Button variant="secondary" onClick={() => openEditReg(reg)}><Pencil className="w-4 h-4" /> แก้ไข</Button>
-                        <Button variant="danger" onClick={() => setCancelling(reg)}><Trash2 className="w-4 h-4" /> ยกเลิก</Button>
+                      <div className="flex gap-2 mt-2">
+                        <Button variant="secondary" className="text-xs !min-h-8 !px-3" onClick={() => openEditReg(reg)}><Pencil className="w-3 h-3" /> แก้ไข</Button>
+                        <Button variant="danger" className="text-xs !min-h-8 !px-3" onClick={() => setCancelling(reg)}><Trash2 className="w-3 h-3" /> ยกเลิก</Button>
                       </div>
                     )}
                     {!cancelled && !canModify(reg) && (
-                      <p className="text-sm text-ink/50 mt-2">ปิดรับสมัครแล้ว หากต้องการแก้ไข/ยกเลิก กรุณาติดต่อผู้จัดกิจกรรม</p>
+                      <p className="text-xs text-ink/50 mt-1.5">ปิดรับสมัครแล้ว หากต้องการแก้ไข/ยกเลิก กรุณาติดต่อผู้จัดกิจกรรม</p>
                     )}
                   </li>
                 );
@@ -291,8 +290,8 @@ export default function ProfilePage() {
         </section>
 
         {/* ── Sidebar: เปลี่ยนรหัสผ่าน ── */}
-        <section className="bg-white rounded-2xl border border-line p-5">
-          <h2 className="font-semibold mb-4">เปลี่ยนรหัสผ่าน</h2>
+        <section className="bg-white rounded-2xl border border-line p-4 sm:p-5">
+          <h2 className="font-semibold mb-3 text-sm sm:text-base">เปลี่ยนรหัสผ่าน</h2>
           <div className="space-y-3">
             <Field label="รหัสผ่านใหม่" required error={pwError}>
               <Input type="password" value={pw} onChange={(e) => setPw(e.target.value)} autoComplete="new-password" />

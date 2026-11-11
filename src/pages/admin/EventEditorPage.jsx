@@ -130,8 +130,8 @@ function rowFromLevel(l) {
   return {
     level: l.level, enabled: true, id: l.id,
     event_date: l.event_date ?? '',
-    reg_open_at: toDatetimeLocal(l.reg_open_at),
-    reg_close_at: toDatetimeLocal(l.reg_close_at),
+    reg_open_at: l.reg_open_at ? l.reg_open_at.slice(0, 10) : '',
+    reg_close_at: l.reg_close_at ? l.reg_close_at.slice(0, 10) : '',
     min_per_dept: l.min_per_dept ?? '',
     max_per_dept: l.max_per_dept ?? '',
   };
@@ -165,9 +165,9 @@ function LevelsTab({ event, rows, setRows }) {
     for (const r of enabled) {
       const e = {};
       if (!r.event_date) e.event_date = 'กรอกวันจัดกิจกรรม';
-      if (!r.reg_open_at) e.reg_open_at = 'กรอกเวลาเปิดรับสมัคร';
-      if (!r.reg_close_at) e.reg_close_at = 'กรอกเวลาปิดรับสมัคร';
-      if (r.reg_open_at && r.reg_close_at && r.reg_close_at <= r.reg_open_at) e.reg_close_at = 'เวลาปิดต้องหลังเวลาเปิด';
+      if (!r.reg_open_at) e.reg_open_at = 'กรอกวันเปิดรับสมัคร';
+      if (!r.reg_close_at) e.reg_close_at = 'กรอกวันปิดรับสมัคร';
+      if (r.reg_open_at && r.reg_close_at && r.reg_close_at < r.reg_open_at) e.reg_close_at = 'วันปิดต้องไม่ก่อนวันเปิด';
       const min = r.min_per_dept === '' ? null : Number(r.min_per_dept);
       const max = r.max_per_dept === '' ? null : Number(r.max_per_dept);
       if (min != null && (!Number.isInteger(min) || min < 0)) e.min_per_dept = 'ขั้นต่ำต้องเป็นจำนวนเต็ม 0 ขึ้นไป';
@@ -190,8 +190,8 @@ function LevelsTab({ event, rows, setRows }) {
             event_id: event.id,
             level: r.level,
             event_date: r.event_date,
-            reg_open_at: localToTimestamptz(r.reg_open_at),
-            reg_close_at: localToTimestamptz(r.reg_close_at),
+            reg_open_at: `${r.reg_open_at}T00:00:00+07:00`,
+            reg_close_at: `${r.reg_close_at}T23:59:59+07:00`,
             min_per_dept: r.min_per_dept === '' ? null : Number(r.min_per_dept),
             max_per_dept: r.max_per_dept === '' ? null : Number(r.max_per_dept),
           };
@@ -250,10 +250,10 @@ function LevelsTab({ event, rows, setRows }) {
                 </Field>
                 <div className="hidden sm:block" />
                 <Field label="เปิดรับสมัคร" required error={e.reg_open_at} htmlFor={`open-${r.level}`}>
-                  <Input id={`open-${r.level}`} type="datetime-local" value={r.reg_open_at} onChange={(ev) => setRow(r.level, { reg_open_at: ev.target.value })} />
+                  <Input id={`open-${r.level}`} type="date" value={r.reg_open_at} onChange={(ev) => setRow(r.level, { reg_open_at: ev.target.value })} />
                 </Field>
                 <Field label="ปิดรับสมัคร" required error={e.reg_close_at} htmlFor={`close-${r.level}`}>
-                  <Input id={`close-${r.level}`} type="datetime-local" value={r.reg_close_at} onChange={(ev) => setRow(r.level, { reg_close_at: ev.target.value })} />
+                  <Input id={`close-${r.level}`} type="date" value={r.reg_close_at} onChange={(ev) => setRow(r.level, { reg_close_at: ev.target.value })} />
                 </Field>
                 <Field label="ขั้นต่ำต่อแผนก (เว้นว่าง = ไม่กำหนด)" error={e.min_per_dept} htmlFor={`min-${r.level}`}>
                   <Input id={`min-${r.level}`} type="number" min="0" value={r.min_per_dept} onChange={(ev) => setRow(r.level, { min_per_dept: ev.target.value })} />

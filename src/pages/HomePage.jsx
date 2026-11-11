@@ -151,23 +151,28 @@ export default function HomePage() {
                   <Link
                     key={r.id}
                     to={`/events/${r.event_levels?.events?.id}`}
-                    className="bg-white border border-line rounded-2xl p-4 flex items-center gap-3 hover:border-cobalt/40 transition-colors"
+                    className="group block bg-white border border-line rounded-xl p-4 sm:p-5 shadow-sm hover:border-cobalt/40 transition-colors"
                   >
-                    {/* วันที่ */}
-                    <div className="shrink-0 w-11 h-11 rounded-xl bg-cobalt/10 text-cobalt flex flex-col items-center justify-center leading-none">
-                      <span className="text-base font-bold">
-                        {new Date(`${r.event_levels?.event_date}T00:00:00+07:00`).getDate()}
-                      </span>
-                      <span className="text-[10px] mt-0.5 opacity-70">
-                        {new Date(`${r.event_levels?.event_date}T00:00:00+07:00`).toLocaleDateString('th-TH', { month: 'short' })}
-                      </span>
-                    </div>
-                    {/* ข้อมูล */}
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium truncate text-sm">{r.event_levels?.events?.title}</p>
-                      <div className="flex items-center gap-1.5 mt-1">
-                        <LevelBadge level={r.event_levels?.level} />
-                        <span className="text-xs text-ink/50">{fmtDate(r.event_levels?.event_date)}</span>
+                    <div className="flex gap-3">
+                      {/* วันที่ — เหมือน EventCard */}
+                      <div className="shrink-0 text-center border border-line rounded-lg bg-bg px-2.5 py-2 self-start">
+                        <span className="block font-bold text-2xl leading-none">
+                          {new Date(`${r.event_levels?.event_date}T00:00:00+07:00`).getDate()}
+                        </span>
+                        <span className="block text-[11px] text-ink/60 mt-1 whitespace-nowrap">
+                          {new Date(`${r.event_levels?.event_date}T00:00:00+07:00`).toLocaleDateString('th-TH', { month: 'short' })}{' '}
+                          {String((new Date(`${r.event_levels?.event_date}T00:00:00+07:00`).getFullYear() + 543) % 100).padStart(2, '0')}
+                        </span>
+                      </div>
+                      {/* ข้อมูล */}
+                      <div className="min-w-0">
+                        <p className="font-semibold leading-snug group-hover:text-cobalt transition-colors">
+                          {r.event_levels?.events?.title}
+                        </p>
+                        <div className="flex flex-wrap gap-1.5 mt-2.5">
+                          <LevelBadge level={r.event_levels?.level} />
+                          <span className="text-xs text-ink/50 self-center">{fmtDate(r.event_levels?.event_date)}</span>
+                        </div>
                       </div>
                     </div>
                   </Link>
