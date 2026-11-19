@@ -391,7 +391,9 @@ export default function EventEditorPage() {
   const counts = useEventCounts(id);
   const event = eventQuery.data;
   const hasRegistrations = (counts.data ?? []).some((c) => c.registered > 0);
-  const locked = !isNew && event && !isAdmin && !(event.created_by === user?.id && event.approval_status === 'pending');
+  // organizer ที่เป็นเจ้าของ + pending → แก้ได้ทุก tab
+  // organizer ทั่วไป → เข้าได้เฉพาะ tab poster เสมอ (ไม่ locked)
+  const locked = !isNew && event && !isAdmin && !isOrganizer && !(event.created_by === user?.id && event.approval_status === 'pending');
 
   // เก็บ state ของ LevelsTab ที่นี่เพื่อไม่ให้ข้อมูลหายเวลาเปลี่ยน tab
   const [levelsRows, setLevelsRows] = useState(null);
@@ -437,8 +439,7 @@ export default function EventEditorPage() {
 
       {(isNew || event) && !locked && (
         <>
-          <div className="flex gap-1 bg-white border border-line rounded-2xl p-1 overflow-x-auto" role="tablist">
-            {visibleTabs.map((t) => (
+          <div className="flex gap-1 bg-white border border-line rounded-2xl p-1 overflow-x-auto" role="tablist">            {visibleTabs.map((t) => (
               <button
                 key={t.value}
                 role="tab"
@@ -468,6 +469,11 @@ export default function EventEditorPage() {
             <FormBuilder event={event} hasRegistrations={hasRegistrations} />
           )}
         </>
+      )}
+
+      {/* organizer เข้าได้แค่ poster แม้กิจกรรม approved แล้ว */}
+      {event && isOrganizer && locked === false ? null : event && isOrganizer && (
+        <PosterTab event={event} />
       )}
     </div>
   );
