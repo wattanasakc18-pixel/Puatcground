@@ -176,8 +176,8 @@ function InfoTab({ event }) {
                 <Clock className="w-4 h-4 text-ink/40 mt-0.5 shrink-0" />
                 <div>
                   <p className="text-ink/50 text-xs">รับสมัคร</p>
-                  <p>{fmtDateTime(l.reg_open_at)}</p>
-                  <p className="text-ink/50">ถึง {fmtDateTime(l.reg_close_at)}</p>
+                  <p>{fmtDate(l.reg_open_at)}</p>
+                  <p className="text-ink/50">ถึง {fmtDate(l.reg_close_at)}</p>
                 </div>
               </div>
               <p className="text-sm">
@@ -735,7 +735,7 @@ export default function EventDetailPage() {
                 <div key={l.id} className="space-y-1">
                   <LevelBadge level={l.level} />
                   <p className="text-xs text-ink/60">
-                    {fmtDateTime(l.reg_open_at)} – {fmtDateTime(l.reg_close_at)}
+                    {fmtDate(l.reg_open_at)} – {fmtDate(l.reg_close_at)}
                   </p>
                 </div>
               ))}
