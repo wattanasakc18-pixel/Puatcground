@@ -52,7 +52,7 @@ export default function LoginPage() {
                 value={studentCode}
                 onChange={(e) => setStudentCode(e.target.value)}
                 autoComplete="username"
-                placeholder="เช่น 66102010001"
+                placeholder=""
                 className="min-h-12"
               />
             </Field>
