@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
-import { Pencil, Trash2, Plus, Users, Calendar, Clock, ChevronLeft } from 'lucide-react';
+import { Pencil, Trash2, Plus, Users, Calendar, Clock, ChevronLeft, Trophy, Image, ExternalLink, Save } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { useEvent, useFormFields, useMyRegistrations, useDeptCounts, useRoster } from '../../hooks/useQueries.js';
+import { useEvent, useFormFields, useMyRegistrations, useDeptCounts, useRoster, useEventCounts } from '../../hooks/useQueries.js';
 import { register, cancelRegistration, updateAnswers } from '../../api/registrations.js';
+import { updateEvent } from '../../api/events.js';
 import { emailRegistered } from '../../api/email.js';
 import { fieldsForLevel, validateAnswers } from '../../lib/answers.js';
 import { registrationStatus, STATUS_META, STATUS_REASONS, eventRunStatus, RUN_STATUS_META } from '../../lib/eventStatus.js';
@@ -25,6 +26,7 @@ import { useToast } from '../../components/ui/Toast.jsx';
 const TABS = [
   { key: 'info', label: 'ข้อมูลกิจกรรม' },
   { key: 'participants', label: 'ผู้เข้าร่วม' },
+  { key: 'results', label: 'ผลลัพธ์' },
 ];
 
 function TabBar({ active, onChange }) {
@@ -254,6 +256,180 @@ function ParticipantsTab({ eventId, rosterQuery }) {
   );
 }
 
+// ── Tab: ผลลัพธ์ ─────────────────────────────────────────────────────────────
+function ResultsTab({ event, rosterQuery, countsQuery, canEdit, onSaved }) {
+  const toast = useToast();
+  const queryClient = useQueryClient();
+  const [editing, setEditing] = useState(false);
+  const [resultText, setResultText] = useState(event.result_text ?? '');
+  const [resultImageUrl, setResultImageUrl] = useState(event.result_image_url ?? '');
+  const [saving, setSaving] = useState(false);
+
+  const roster = rosterQuery.data ?? [];
+  const counts = countsQuery.data ?? [];
+
+  // สรุปจำนวนผู้เข้าร่วมแยกแผนก
+  const deptSummary = useMemo(() => {
+    const map = {};
+    roster.forEach((r) => {
+      const key = r.department_name || 'ไม่ระบุแผนก';
+      if (!map[key]) map[key] = { dept: key, total: 0, levels: {} };
+      map[key].total += 1;
+      map[key].levels[r.level] = (map[key].levels[r.level] || 0) + 1;
+    });
+    return Object.values(map).sort((a, b) => b.total - a.total);
+  }, [roster]);
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      await updateEvent(event.id, { result_text: resultText, result_image_url: resultImageUrl });
+      queryClient.invalidateQueries({ queryKey: ['event', event.id] });
+      toast('บันทึกผลลัพธ์แล้ว');
+      setEditing(false);
+      if (onSaved) onSaved();
+    } catch (err) {
+      toast(toThaiError(err, 'บันทึกไม่สำเร็จ'), 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* สรุปจำนวนผู้เข้าร่วม */}
+      <div>
+        <h3 className="text-sm font-semibold text-ink/50 uppercase tracking-wide mb-3 flex items-center gap-2">
+          <Users className="w-4 h-4" /> สรุปผู้เข้าร่วม ({roster.length} คน)
+        </h3>
+        {rosterQuery.isPending ? <LoadingState text="กำลังโหลด..." /> : roster.length === 0 ? (
+          <p className="text-sm text-ink/50">ยังไม่มีผู้ลงชื่อเข้าร่วม</p>
+        ) : (
+          <div className="space-y-2">
+            {/* สรุปต่อระดับ */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
+              {event.event_levels.map((l) => {
+                const count = roster.filter((r) => r.level === l.level).length;
+                return (
+                  <div key={l.id} className="bg-cobalt/5 border border-cobalt/20 rounded-xl px-4 py-3 text-center">
+                    <p className="text-xl font-bold text-cobalt">{count}</p>
+                    <p className="text-xs text-ink/60">{l.level}</p>
+                  </div>
+                );
+              })}
+              <div className="bg-bg border border-line rounded-xl px-4 py-3 text-center">
+                <p className="text-xl font-bold text-ink">{roster.length}</p>
+                <p className="text-xs text-ink/60">รวมทั้งหมด</p>
+              </div>
+            </div>
+            {/* แยกแผนก */}
+            <div className="bg-white rounded-2xl border border-line overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="bg-bg border-b border-line">
+                  <tr>
+                    <th className="text-left px-4 py-2.5 font-semibold text-ink/60">แผนกวิชา</th>
+                    {event.event_levels.map((l) => (
+                      <th key={l.id} className="text-center px-3 py-2.5 font-semibold text-ink/60">{l.level}</th>
+                    ))}
+                    <th className="text-center px-3 py-2.5 font-semibold text-ink/60">รวม</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-line">
+                  {deptSummary.map((d) => (
+                    <tr key={d.dept}>
+                      <td className="px-4 py-2.5">{d.dept}</td>
+                      {event.event_levels.map((l) => (
+                        <td key={l.id} className="text-center px-3 py-2.5">{d.levels[l.level] || 0}</td>
+                      ))}
+                      <td className="text-center px-3 py-2.5 font-semibold">{d.total}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ผลการแข่งขัน */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-semibold text-ink/50 uppercase tracking-wide flex items-center gap-2">
+            <Trophy className="w-4 h-4" /> ผลการแข่งขัน
+          </h3>
+          {canEdit && !editing && (
+            <button
+              onClick={() => setEditing(true)}
+              className="text-xs text-cobalt hover:underline flex items-center gap-1"
+            >
+              <Pencil className="w-3.5 h-3.5" /> แก้ไข
+            </button>
+          )}
+        </div>
+
+        {editing ? (
+          <div className="space-y-3">
+            <div>
+              <label className="block text-sm font-medium mb-1.5">ผลการแข่งขัน / รายละเอียด</label>
+              <textarea
+                className="w-full min-h-32 px-3 py-2.5 rounded-xl border border-line bg-white text-sm resize-y focus:outline-none focus:ring-2 focus:ring-cobalt/30"
+                placeholder="เช่น รางวัลชนะเลิศ: นายสมชาย..., รองชนะเลิศอันดับ 1: ..."
+                value={resultText}
+                onChange={(e) => setResultText(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1.5 flex items-center gap-1.5">
+                <Image className="w-3.5 h-3.5" /> Link รูปภาพ / อัลบั้ม
+              </label>
+              <input
+                type="url"
+                className="w-full px-3 py-2.5 rounded-xl border border-line bg-white text-sm focus:outline-none focus:ring-2 focus:ring-cobalt/30"
+                placeholder="เช่น https://drive.google.com/... หรือ https://fb.com/..."
+                value={resultImageUrl}
+                onChange={(e) => setResultImageUrl(e.target.value)}
+              />
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button variant="secondary" onClick={() => { setEditing(false); setResultText(event.result_text ?? ''); setResultImageUrl(event.result_image_url ?? ''); }} disabled={saving}>
+                ยกเลิก
+              </Button>
+              <Button onClick={save} loading={saving}>
+                <Save className="w-4 h-4" /> บันทึก
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {event.result_text ? (
+              <div className="bg-bg rounded-2xl border border-line p-4">
+                <p className="text-sm text-ink/80 whitespace-pre-line leading-relaxed">{event.result_text}</p>
+              </div>
+            ) : (
+              <p className="text-sm text-ink/40 italic">
+                {canEdit ? 'ยังไม่มีผลการแข่งขัน กดแก้ไขเพื่อเพิ่ม' : 'ยังไม่มีผลการแข่งขัน'}
+              </p>
+            )}
+
+            {event.result_image_url && (
+              <a
+                href={event.result_image_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-sm text-cobalt hover:underline bg-cobalt/5 border border-cobalt/20 rounded-xl px-4 py-2.5"
+              >
+                <Image className="w-4 h-4" />
+                ดูรูปภาพ / อัลบั้มกิจกรรม
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Main Page ─────────────────────────────────────────────────────────────────
 export default function EventDetailPage() {
   const { eventId } = useParams();
@@ -266,6 +442,7 @@ export default function EventDetailPage() {
   const regsQuery = useMyRegistrations(true);
   const countsQuery = useDeptCounts();
   const rosterQuery = useRoster(eventId);
+  const eventCountsQuery = useEventCounts(eventId);
 
   const [activeTab, setActiveTab] = useState('info');
   const [formOpen, setFormOpen] = useState(false);
@@ -280,6 +457,8 @@ export default function EventDetailPage() {
 
   const event = eventQuery.data;
   const isAdmin = profile?.role === 'admin';
+  const isOrganizer = profile?.role === 'organizer';
+  const canEdit = isAdmin || isOrganizer;
   const myLevel = event?.event_levels.find((l) => l.level === profile?.level);
   const effectiveLevel = isAdmin
     ? (event?.event_levels.find((l) => l.id === adminLevelId) ?? myLevel ?? event?.event_levels[0])
@@ -489,6 +668,14 @@ export default function EventDetailPage() {
           <div className="p-5">
             {activeTab === 'info' && <InfoTab event={event} />}
             {activeTab === 'participants' && <ParticipantsTab eventId={eventId} rosterQuery={rosterQuery} />}
+            {activeTab === 'results' && (
+              <ResultsTab
+                event={event}
+                rosterQuery={rosterQuery}
+                countsQuery={eventCountsQuery}
+                canEdit={canEdit}
+              />
+            )}
           </div>
         </div>
 
