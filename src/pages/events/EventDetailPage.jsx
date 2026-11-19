@@ -265,6 +265,7 @@ function ResultsTab({ event, rosterQuery, countsQuery, canEdit, onSaved }) {
   const [resultImageUrl, setResultImageUrl] = useState(event.result_image_url ?? '');
   const [resultVisible, setResultVisible] = useState(event.result_visible ?? false);
   const [saving, setSaving] = useState(false);
+  const [togglingVisible, setTogglingVisible] = useState(false);
 
   const roster = rosterQuery.data ?? [];
   const counts = countsQuery.data ?? [];
@@ -375,9 +376,9 @@ function ResultsTab({ event, rosterQuery, countsQuery, canEdit, onSaved }) {
               type="button"
               role="switch"
               aria-checked={event.result_visible}
-              disabled={saving}
+              disabled={togglingVisible}
               onClick={async () => {
-                setSaving(true);
+                setTogglingVisible(true);
                 try {
                   await updateEvent(event.id, { result_visible: !event.result_visible });
                   queryClient.invalidateQueries({ queryKey: ['event', event.id] });
@@ -385,7 +386,7 @@ function ResultsTab({ event, rosterQuery, countsQuery, canEdit, onSaved }) {
                 } catch (err) {
                   toast(toThaiError(err, 'บันทึกไม่สำเร็จ'), 'error');
                 } finally {
-                  setSaving(false);
+                  setTogglingVisible(false);
                 }
               }}
               className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${event.result_visible ? 'bg-cobalt' : 'bg-line'}`}
