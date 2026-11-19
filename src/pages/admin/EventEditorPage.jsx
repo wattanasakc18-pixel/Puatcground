@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Copy, ImagePlus, X } from 'lucide-react';
@@ -281,7 +281,7 @@ function PosterTab({ event }) {
   const [preview, setPreview] = useState(event?.poster_url || null);
   const [uploading, setUploading] = useState(false);
   const [removing, setRemoving] = useState(false);
-  const fileRef = useState(null);
+  const fileInputRef = useRef(null);
 
   const handleFile = async (file) => {
     if (!file) return;
@@ -356,20 +356,21 @@ function PosterTab({ event }) {
         )}
       </div>
 
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="sr-only"
+        onChange={(e) => handleFile(e.target.files?.[0])}
+        disabled={uploading}
+      />
+
       {/* Upload button */}
-      <label className="block">
-        <input
-          type="file"
-          accept="image/*"
-          className="sr-only"
-          onChange={(e) => handleFile(e.target.files?.[0])}
-          disabled={uploading}
-        />
-        <Button as="span" loading={uploading} className="cursor-pointer">
-          <ImagePlus className="w-4 h-4" />
-          {preview ? 'เปลี่ยนโปสเตอร์' : 'อัปโหลดโปสเตอร์'}
-        </Button>
-      </label>
+      <Button onClick={() => fileInputRef.current?.click()} loading={uploading}>
+        <ImagePlus className="w-4 h-4" />
+        {preview ? 'เปลี่ยนโปสเตอร์' : 'อัปโหลดโปสเตอร์'}
+      </Button>
     </div>
   );
 }
