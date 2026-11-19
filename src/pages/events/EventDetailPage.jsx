@@ -394,17 +394,26 @@ export default function EventDetailPage() {
     <div className="max-w-6xl mx-auto space-y-0">
       {/* ── Hero Section ──────────────────────────────────────────────── */}
       <div className="relative rounded-2xl overflow-hidden mb-6">
-        {/* Gradient background */}
-        <div className="h-56 sm:h-72 bg-gradient-to-br from-cobalt via-cobalt/80 to-ink/90 relative">
-          {/* Pattern overlay */}
-          <div
-            className="absolute inset-0 opacity-10"
-            style={{
-              backgroundImage: `radial-gradient(circle at 20% 50%, white 1px, transparent 1px),
-                radial-gradient(circle at 80% 20%, white 1px, transparent 1px)`,
-              backgroundSize: '60px 60px',
-            }}
-          />
+        <div className="h-56 sm:h-72 relative"
+          style={event.poster_url
+            ? { backgroundImage: `url(${event.poster_url})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+            : {}
+          }
+        >
+          {/* Gradient background (แสดงเมื่อไม่มีโปสเตอร์) */}
+          {!event.poster_url && (
+            <>
+              <div className="absolute inset-0 bg-gradient-to-br from-cobalt via-cobalt/80 to-ink/90" />
+              <div
+                className="absolute inset-0 opacity-10"
+                style={{
+                  backgroundImage: `radial-gradient(circle at 20% 50%, white 1px, transparent 1px),
+                    radial-gradient(circle at 80% 20%, white 1px, transparent 1px)`,
+                  backgroundSize: '60px 60px',
+                }}
+              />
+            </>
+          )}
 
           {/* Back button */}
           <Link

@@ -19,3 +19,7 @@ export function uploadAvatar(userId, file) {
 export function uploadFormImage(userId, file) {
   return upload('form-uploads', `${userId}/${crypto.randomUUID()}.${extOf(file)}`, file);
 }
+
+export function uploadEventPoster(eventId, file) {
+  return upload('event-posters', `${eventId}/poster_${Date.now()}.${extOf(file)}`, file);
+}

@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Copy } from 'lucide-react';
+import { ArrowLeft, Copy, ImagePlus, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useEvent, useCategories, useEventCounts } from '../../hooks/useQueries.js';
 import {
   createEvent, updateEvent, createEventLevel, updateEventLevel, deleteEventLevel,
 } from '../../api/events.js';
+import { uploadEventPoster } from '../../api/storage.js';
 import { LEVELS, REGISTRATION_TYPES } from '../../lib/constants.js';
 import { toDatetimeLocal, localToTimestamptz, todayStr } from '../../lib/format.js';
 import { toThaiError } from '../../lib/errors.js';
@@ -20,6 +21,7 @@ import FormBuilder from './FormBuilder.jsx';
 const TABS = [
   { value: 'general', label: 'ข้อมูลทั่วไป' },
   { value: 'levels', label: 'ระดับที่เข้าร่วม' },
+  { value: 'poster', label: 'โปสเตอร์' },
   { value: 'form', label: 'ฟอร์มลงชื่อ' },
 ];
 
@@ -273,11 +275,111 @@ function LevelsTab({ event, rows, setRows }) {
   );
 }
 
+function PosterTab({ event }) {
+  const toast = useToast();
+  const queryClient = useQueryClient();
+  const [preview, setPreview] = useState(event?.poster_url || null);
+  const [uploading, setUploading] = useState(false);
+  const [removing, setRemoving] = useState(false);
+  const fileRef = useState(null);
+
+  const handleFile = async (file) => {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      toast('กรุณาเลือกไฟล์รูปภาพเท่านั้น', 'error');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast('ขนาดไฟล์ต้องไม่เกิน 5 MB', 'error');
+      return;
+    }
+    setUploading(true);
+    try {
+      const url = await uploadEventPoster(event.id, file);
+      await updateEvent(event.id, { poster_url: url });
+      queryClient.invalidateQueries({ queryKey: ['event', event.id] });
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      setPreview(url);
+      toast('อัปโหลดโปสเตอร์แล้ว');
+    } catch (err) {
+      toast(toThaiError(err, 'อัปโหลดไม่สำเร็จ'), 'error');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleRemove = async () => {
+    setRemoving(true);
+    try {
+      await updateEvent(event.id, { poster_url: '' });
+      queryClient.invalidateQueries({ queryKey: ['event', event.id] });
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      setPreview(null);
+      toast('ลบโปสเตอร์แล้ว');
+    } catch (err) {
+      toast(toThaiError(err, 'ลบไม่สำเร็จ'), 'error');
+    } finally {
+      setRemoving(false);
+    }
+  };
+
+  return (
+    <div className="max-w-2xl mx-auto space-y-4">
+      <p className="text-sm text-ink/60">
+        โปสเตอร์จะแสดงเป็นพื้นหลังของหน้ากิจกรรม รองรับ JPG, PNG, WEBP ขนาดไม่เกิน 5 MB
+        แนะนำสัดส่วน 16:9 หรือ 3:1 (แนวนอน)
+      </p>
+
+      {/* Preview */}
+      <div className="relative w-full aspect-[3/1] rounded-2xl overflow-hidden border border-line bg-bg">
+        {preview ? (
+          <>
+            <img
+              src={preview}
+              alt="โปสเตอร์กิจกรรม"
+              className="w-full h-full object-cover"
+            />
+            <button
+              onClick={handleRemove}
+              disabled={removing}
+              className="absolute top-3 right-3 bg-black/60 hover:bg-black/80 text-white rounded-full p-1.5 transition-colors"
+              aria-label="ลบโปสเตอร์"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </>
+        ) : (
+          <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-ink/40">
+            <ImagePlus className="w-10 h-10" />
+            <p className="text-sm">ยังไม่มีโปสเตอร์</p>
+          </div>
+        )}
+      </div>
+
+      {/* Upload button */}
+      <label className="block">
+        <input
+          type="file"
+          accept="image/*"
+          className="sr-only"
+          onChange={(e) => handleFile(e.target.files?.[0])}
+          disabled={uploading}
+        />
+        <Button as="span" loading={uploading} className="cursor-pointer">
+          <ImagePlus className="w-4 h-4" />
+          {preview ? 'เปลี่ยนโปสเตอร์' : 'อัปโหลดโปสเตอร์'}
+        </Button>
+      </label>
+    </div>
+  );
+}
+
 export default function EventEditorPage() {
   const { id } = useParams();
   const isNew = !id;
   const { user, profile } = useAuth();
   const isAdmin = profile?.role === 'admin';
+  const isOrganizer = profile?.role === 'organizer';
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const tab = searchParams.get('tab') ?? 'general';
@@ -306,7 +408,7 @@ export default function EventEditorPage() {
     if (isNew && tab !== 'general') setSearchParams({}, { replace: true });
   }, [isNew, tab, setSearchParams]);
 
-  const visibleTabs = isNew ? TABS.slice(0, 1) : TABS;
+  const visibleTabs = isNew ? TABS.slice(0, 1) : (isOrganizer ? TABS.filter((t) => t.value === 'poster') : TABS);
 
   return (
     <div className="space-y-4">
@@ -354,6 +456,9 @@ export default function EventEditorPage() {
           )}
           {tab === 'levels' && event && levelsRows && (
             <LevelsTab key={event.id} event={event} rows={levelsRows} setRows={setLevelsRows} />
+          )}
+          {tab === 'poster' && event && (
+            <PosterTab event={event} />
           )}
           {tab === 'form' && event && (
             <FormBuilder event={event} hasRegistrations={hasRegistrations} />
