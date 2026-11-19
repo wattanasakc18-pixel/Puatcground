@@ -388,9 +388,9 @@ function ResultsTab({ event, rosterQuery, countsQuery, canEdit, onSaved }) {
                   setSaving(false);
                 }
               }}
-              className={`relative w-10 h-6 rounded-full transition-colors shrink-0 overflow-hidden ${event.result_visible ? 'bg-cobalt' : 'bg-line'}`}
+              className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${event.result_visible ? 'bg-cobalt' : 'bg-line'}`}
             >
-              <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${event.result_visible ? 'translate-x-5' : 'translate-x-1'}`} />
+              <span className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${event.result_visible ? 'translate-x-5' : 'translate-x-0'}`} />
             </button>
             <div>
               <p className="text-sm font-medium">{event.result_visible ? 'เปิดให้นักศึกษาเห็นผลลัพธ์' : 'ซ่อนผลลัพธ์จากนักศึกษา'}</p>
@@ -427,9 +427,9 @@ function ResultsTab({ event, rosterQuery, countsQuery, canEdit, onSaved }) {
                 role="switch"
                 aria-checked={resultVisible}
                 onClick={() => setResultVisible((v) => !v)}
-                className={`relative w-10 h-6 rounded-full transition-colors shrink-0 overflow-hidden ${resultVisible ? 'bg-cobalt' : 'bg-line'}`}
+                className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${resultVisible ? 'bg-cobalt' : 'bg-line'}`}
               >
-                <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${resultVisible ? 'translate-x-5' : 'translate-x-1'}`} />
+                <span className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${resultVisible ? 'translate-x-5' : 'translate-x-0'}`} />
               </button>
               <div>
                 <p className="text-sm font-medium">{resultVisible ? 'เปิดให้นักศึกษาเห็นผลลัพธ์' : 'ซ่อนผลลัพธ์จากนักศึกษา'}</p>
