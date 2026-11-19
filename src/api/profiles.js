@@ -52,3 +52,23 @@ export async function resetUserPassword(userId, newPassword) {
   });
   if (error) throw error;
 }
+
+export async function deleteUser(userId) {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) throw new Error('ไม่ได้เข้าสู่ระบบ');
+  const res = await fetch(
+    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-user`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ target_user_id: userId }),
+    },
+  );
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error ?? 'ลบบัญชีไม่สำเร็จ');
+  }
+}

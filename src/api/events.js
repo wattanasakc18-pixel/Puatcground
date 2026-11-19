@@ -1,6 +1,6 @@
 import { supabase } from '../lib/supabase.js';
 
-const EVENT_SELECT = '*, event_categories(name), event_levels(*)';
+const EVENT_SELECT = '*, event_categories(name), event_levels(*), profiles(department_id, departments(name))';
 
 export async function listEvents({ year = '', categoryId = '', search = '', approvedOnly = true, createdBy = '' } = {}) {
   let q = supabase.from('events').select(EVENT_SELECT).order('created_at', { ascending: false });

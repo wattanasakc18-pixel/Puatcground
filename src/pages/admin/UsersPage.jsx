@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Search, Users, CalendarCheck, KeyRound } from 'lucide-react';
+import { Search, Users, CalendarCheck, KeyRound, Trash2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useUsers, useDepartments, useEvents, useOrganizerLevels } from '../../hooks/useQueries.js';
-import { setUserRole, resetUserPassword } from '../../api/profiles.js';
+import { setUserRole, resetUserPassword, deleteUser } from '../../api/profiles.js';
 import { emailPasswordReset } from '../../api/email.js';
 import { addOrganizer, removeOrganizer } from '../../api/events.js';
 import { LEVELS, ROLE_LABELS } from '../../lib/constants.js';
@@ -119,6 +119,8 @@ export default function UsersPage() {
   const [resetError, setResetError] = useState('');
   const [resetting, setResetting] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   const requestRoleChange = (target, newRole) => {
     if (target.role === newRole) return;
@@ -170,6 +172,20 @@ export default function UsersPage() {
       setResetError(toThaiError(err, 'รีเซ็ตรหัสผ่านไม่สำเร็จ'));
     } finally {
       setResetting(false);
+    }
+  };
+
+  const confirmDelete = async () => {
+    setDeleting(true);
+    try {
+      await deleteUser(deleteTarget.id);
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast(`ลบบัญชี ${fullName(deleteTarget)} แล้ว`);
+      setDeleteTarget(null);
+    } catch (err) {
+      toast(toThaiError(err, 'ลบบัญชีไม่สำเร็จ'), 'error');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -238,6 +254,16 @@ export default function UsersPage() {
                 <Button variant="secondary" onClick={() => openReset(u)} className="text-sm">
                   <KeyRound className="w-4 h-4" /> รีเซ็ตรหัส
                 </Button>
+                {u.id !== user.id && (
+                  <Button
+                    variant="secondary"
+                    onClick={() => setDeleteTarget(u)}
+                    className="text-sm text-coral hover:bg-coral/10 hover:border-coral/30"
+                    aria-label={`ลบบัญชี ${fullName(u)}`}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                )}
               </div>
             </div>
           ))}
@@ -255,7 +281,6 @@ export default function UsersPage() {
       />
 
       {orgTarget && <OrganizerModal target={orgTarget} onClose={() => setOrgTarget(null)} />}
-
       {/* Modal รีเซ็ตรหัสผ่าน */}
       <Modal open={Boolean(resetTarget)} onClose={() => !resetting && setResetTarget(null)} title={`รีเซ็ตรหัสผ่าน: ${fullName(resetTarget)}`}>
         <div className="space-y-4">
@@ -286,6 +311,16 @@ export default function UsersPage() {
           </div>
         </div>
       </Modal>
+
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        title="ลบบัญชีผู้ใช้"
+        message={`ลบบัญชี "${fullName(deleteTarget)}" (รหัส ${deleteTarget?.student_code}) อย่างถาวรใช่หรือไม่?\n\nข้อมูลการลงชื่อกิจกรรมทั้งหมดของผู้ใช้นี้จะถูกลบตาม และไม่สามารถกู้คืนได้`}
+        confirmLabel="ลบบัญชี"
+        loading={deleting}
+        onConfirm={confirmDelete}
+        onCancel={() => !deleting && setDeleteTarget(null)}
+      />
     </div>
   );
 }

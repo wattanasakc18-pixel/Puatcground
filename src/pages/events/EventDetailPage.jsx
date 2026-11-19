@@ -7,7 +7,7 @@ import { useEvent, useFormFields, useMyRegistrations, useDeptCounts, useRoster }
 import { register, cancelRegistration, updateAnswers } from '../../api/registrations.js';
 import { emailRegistered } from '../../api/email.js';
 import { fieldsForLevel, validateAnswers } from '../../lib/answers.js';
-import { registrationStatus, STATUS_META, STATUS_REASONS } from '../../lib/eventStatus.js';
+import { registrationStatus, STATUS_META, STATUS_REASONS, eventRunStatus, RUN_STATUS_META } from '../../lib/eventStatus.js';
 import { fmtDate, fmtDateTime, fullName } from '../../lib/format.js';
 import { REGISTRATION_TYPES } from '../../lib/constants.js';
 import { toThaiError } from '../../lib/errors.js';
@@ -387,6 +387,8 @@ export default function EventDetailPage() {
 
   // จำนวนผู้ลงชื่อ
   const rosterCount = rosterQuery.data?.length ?? 0;
+  const runStatus = eventRunStatus(event.event_levels);
+  const runMeta = runStatus ? RUN_STATUS_META[runStatus] : null;
 
   return (
     <div className="max-w-6xl mx-auto space-y-0">
@@ -458,6 +460,15 @@ export default function EventDetailPage() {
             </div>
           );
         })}
+        {/* สถานะการดำเนินกิจกรรม */}
+        {runMeta && (
+          <div className={`rounded-2xl border px-4 py-3 flex flex-col items-center justify-center gap-1.5 ${runMeta.className}`}>
+            <div className="flex items-center gap-1.5">
+              <span className={`w-2 h-2 rounded-full shrink-0 ${runMeta.dot}`} />
+              <span className="text-sm font-semibold">{runMeta.label}</span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ── Main layout: content + sidebar ───────────────────────────── */}

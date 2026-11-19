@@ -20,3 +20,38 @@ export const STATUS_REASONS = {
   closed: 'ปิดรับสมัครแล้ว หากต้องการลงชื่อกรุณาติดต่อผู้จัดกิจกรรม',
   full: 'แผนกของคุณลงชื่อครบจำนวนสูงสุดแล้ว',
 };
+
+// ── สถานะการดำเนินกิจกรรม (อิงจากวันจัดจริง) ───────────────────────────────
+/**
+ * คำนวณจาก event_levels ทั้งหมด
+ * - 'ongoing'  : วันนี้อยู่ในช่วงวันจัด (มี level ที่ event_date = วันนี้)
+ * - 'completed': ทุก level จัดผ่านไปแล้ว (event_date ทั้งหมดก่อนวันนี้)
+ * - null       : ยังไม่ถึงวันจัด
+ */
+export function eventRunStatus(eventLevels = [], now = new Date()) {
+  if (!eventLevels.length) return null;
+  const today = now.toLocaleDateString('en-CA', { timeZone: 'Asia/Bangkok' }); // YYYY-MM-DD
+  const dates = eventLevels.map((l) => l.event_date).filter(Boolean);
+  if (!dates.length) return null;
+
+  const hasToday = dates.some((d) => d === today);
+  if (hasToday) return 'ongoing';
+
+  const allPast = dates.every((d) => d < today);
+  if (allPast) return 'completed';
+
+  return null; // ยังไม่ถึงวันจัด
+}
+
+export const RUN_STATUS_META = {
+  ongoing: {
+    label: 'กำลังดำเนินการ',
+    className: 'bg-leaf/10 text-leaf border border-leaf/20',
+    dot: 'bg-leaf animate-pulse',
+  },
+  completed: {
+    label: 'ดำเนินการเสร็จสิ้น',
+    className: 'bg-ink/5 text-ink/60 border border-line',
+    dot: 'bg-ink/40',
+  },
+};

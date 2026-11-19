@@ -3,13 +3,12 @@ import { Link } from 'react-router-dom';
 import { CalendarDays } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useEvents, useMyRegistrations, useDeptCounts } from '../hooks/useQueries.js';
-import { todayStr, startOfWeek, addDays, fmtDate, fullName } from '../lib/format.js';
+import { todayStr, startOfWeek, addDays, fullName } from '../lib/format.js';
 import { registrationStatus } from '../lib/eventStatus.js';
 import { toThaiError } from '../lib/errors.js';
 import Button from '../components/ui/Button.jsx';
 import { LoadingState, EmptyState, ErrorState } from '../components/ui/States.jsx';
 import EventCard from '../components/EventCard.jsx';
-import { LevelBadge } from '../components/Badges.jsx';
 import Avatar from '../components/Avatar.jsx';
 
 function Board({ title, count, children }) {
@@ -147,36 +146,25 @@ export default function HomePage() {
               />
             ) : (
               <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-3">
-                {myUpcoming.map((r) => (
-                  <Link
-                    key={r.id}
-                    to={`/events/${r.event_levels?.events?.id}`}
-                    className="group block bg-white border border-line rounded-xl p-4 sm:p-5 shadow-sm hover:border-cobalt/40 transition-colors"
-                  >
-                    <div className="flex gap-3">
-                      {/* วันที่ — เหมือน EventCard */}
-                      <div className="shrink-0 text-center border border-line rounded-lg bg-bg px-2.5 py-2 self-start">
-                        <span className="block font-bold text-2xl leading-none">
-                          {new Date(`${r.event_levels?.event_date}T00:00:00+07:00`).getDate()}
-                        </span>
-                        <span className="block text-[11px] text-ink/60 mt-1 whitespace-nowrap">
-                          {new Date(`${r.event_levels?.event_date}T00:00:00+07:00`).toLocaleDateString('th-TH', { month: 'short' })}{' '}
-                          {String((new Date(`${r.event_levels?.event_date}T00:00:00+07:00`).getFullYear() + 543) % 100).padStart(2, '0')}
-                        </span>
-                      </div>
-                      {/* ข้อมูล */}
-                      <div className="min-w-0">
-                        <p className="font-semibold leading-snug group-hover:text-cobalt transition-colors">
-                          {r.event_levels?.events?.title}
-                        </p>
-                        <div className="flex flex-wrap gap-1.5 mt-2.5">
-                          <LevelBadge level={r.event_levels?.level} />
-                          <span className="text-xs text-ink/50 self-center">{fmtDate(r.event_levels?.event_date)}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
+                {myUpcoming.map((r) => {
+                  const ev = r.event_levels?.events;
+                  const el = r.event_levels;
+                  if (!ev || !el) return null;
+                  // แปลง registration → event format ที่ EventCard รับได้
+                  const fakeEvent = { ...ev, event_categories: ev.event_categories };
+                  const fakeLevels = [el];
+                  // คำนวณ status จาก event_level โดยตรง ไม่ผ่าน statusOf
+                  const regStatus = registrationStatus(el, countMap.get(el?.id));
+                  return (
+                    <EventCard
+                      key={r.id}
+                      event={fakeEvent}
+                      levels={fakeLevels}
+                      status={regStatus}
+                      registered={true}
+                    />
+                  );
+                })}
               </div>
             )}
           </Board>

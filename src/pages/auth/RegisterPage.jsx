@@ -73,7 +73,7 @@ export default function RegisterPage() {
 
   const validate = () => {
     const er = {};
-    if (!/^[A-Za-z0-9]{4,20}$/.test(form.student_code)) er.student_code = 'ตัวอักษรหรือตัวเลข 4-20 ตัว ไม่มีช่องว่าง';
+    if (!/^\d{11}$/.test(form.student_code)) er.student_code = 'รหัสนักศึกษาต้องเป็นตัวเลข 11 หลักเท่านั้น';
     if (!form.title) er.title = 'เลือกคำนำหน้า';
     if (!form.first_name.trim()) er.first_name = 'กรอกชื่อ';
     if (!form.last_name.trim()) er.last_name = 'กรอกนามสกุล';
@@ -159,7 +159,15 @@ export default function RegisterPage() {
             </div>
 
             <Field label="รหัสนักศึกษา (ใช้เป็น Username)" htmlFor="student_code" required error={errors.student_code}>
-              <Input id="student_code" value={form.student_code} onChange={set('student_code')} autoComplete="username" />
+              <Input
+                id="student_code"
+                value={form.student_code}
+                onChange={(e) => setForm((f) => ({ ...f, student_code: e.target.value.replace(/\D/g, '').slice(0, 11) }))}
+                inputMode="numeric"
+                maxLength={11}
+                placeholder="กรอกตัวเลข 11 หลัก"
+                autoComplete="username"
+              />
             </Field>
 
             <div className="grid grid-cols-3 gap-3">
