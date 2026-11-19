@@ -249,13 +249,16 @@ function LevelsTab({ event, rows, setRows }) {
               <div className="grid sm:grid-cols-2 gap-4 mt-3">
                 <Field label="วันจัดกิจกรรม" required error={e.event_date} htmlFor={`date-${r.level}`}>
                   <Input id={`date-${r.level}`} type="date" value={r.event_date} onChange={(ev) => setRow(r.level, { event_date: ev.target.value })} />
+                  {r.event_date && <p className="text-xs text-ink/50 mt-1">{new Date(`${r.event_date}T00:00:00+07:00`).toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Bangkok' })}</p>}
                 </Field>
                 <div className="hidden sm:block" />
                 <Field label="เปิดรับสมัคร" required error={e.reg_open_at} htmlFor={`open-${r.level}`}>
                   <Input id={`open-${r.level}`} type="date" value={r.reg_open_at} onChange={(ev) => setRow(r.level, { reg_open_at: ev.target.value })} />
+                  {r.reg_open_at && <p className="text-xs text-ink/50 mt-1">{new Date(`${r.reg_open_at}T00:00:00+07:00`).toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Bangkok' })}</p>}
                 </Field>
                 <Field label="ปิดรับสมัคร" required error={e.reg_close_at} htmlFor={`close-${r.level}`}>
                   <Input id={`close-${r.level}`} type="date" value={r.reg_close_at} onChange={(ev) => setRow(r.level, { reg_close_at: ev.target.value })} />
+                  {r.reg_close_at && <p className="text-xs text-ink/50 mt-1">{new Date(`${r.reg_close_at}T00:00:00+07:00`).toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Bangkok' })}</p>}
                 </Field>
                 <Field label="ขั้นต่ำต่อแผนก (เว้นว่าง = ไม่กำหนด)" error={e.min_per_dept} htmlFor={`min-${r.level}`}>
                   <Input id={`min-${r.level}`} type="number" min="0" value={r.min_per_dept} onChange={(ev) => setRow(r.level, { min_per_dept: ev.target.value })} />
