@@ -263,6 +263,7 @@ function ResultsTab({ event, rosterQuery, countsQuery, canEdit, onSaved }) {
   const [editing, setEditing] = useState(false);
   const [resultText, setResultText] = useState(event.result_text ?? '');
   const [resultImageUrl, setResultImageUrl] = useState(event.result_image_url ?? '');
+  const [resultVisible, setResultVisible] = useState(event.result_visible ?? false);
   const [saving, setSaving] = useState(false);
 
   const roster = rosterQuery.data ?? [];
@@ -283,7 +284,7 @@ function ResultsTab({ event, rosterQuery, countsQuery, canEdit, onSaved }) {
   const save = async () => {
     setSaving(true);
     try {
-      await updateEvent(event.id, { result_text: resultText, result_image_url: resultImageUrl });
+      await updateEvent(event.id, { result_text: resultText, result_image_url: resultImageUrl, result_visible: resultVisible });
       queryClient.invalidateQueries({ queryKey: ['event', event.id] });
       toast('บันทึกผลลัพธ์แล้ว');
       setEditing(false);
@@ -367,8 +368,7 @@ function ResultsTab({ event, rosterQuery, countsQuery, canEdit, onSaved }) {
           )}
         </div>
 
-        {editing ? (
-          <div className="space-y-3">
+        {editing ? (          <div className="space-y-3">
             <div>
               <label className="block text-sm font-medium mb-1.5">ผลการแข่งขัน / รายละเอียด</label>
               <textarea
@@ -390,8 +390,23 @@ function ResultsTab({ event, rosterQuery, countsQuery, canEdit, onSaved }) {
                 onChange={(e) => setResultImageUrl(e.target.value)}
               />
             </div>
+            <div className="flex items-center gap-3 bg-bg rounded-xl px-4 py-3">
+              <button
+                type="button"
+                role="switch"
+                aria-checked={resultVisible}
+                onClick={() => setResultVisible((v) => !v)}
+                className={`relative w-10 h-6 rounded-full transition-colors shrink-0 ${resultVisible ? 'bg-cobalt' : 'bg-line'}`}
+              >
+                <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${resultVisible ? 'translate-x-5' : 'translate-x-1'}`} />
+              </button>
+              <div>
+                <p className="text-sm font-medium">{resultVisible ? 'เปิดให้นักศึกษาเห็นผลลัพธ์' : 'ซ่อนผลลัพธ์จากนักศึกษา'}</p>
+                <p className="text-xs text-ink/50">{resultVisible ? 'นักศึกษาสามารถดูผลการแข่งขันได้' : 'เฉพาะ admin/organizer เท่านั้นที่เห็น'}</p>
+              </div>
+            </div>
             <div className="flex gap-2 justify-end">
-              <Button variant="secondary" onClick={() => { setEditing(false); setResultText(event.result_text ?? ''); setResultImageUrl(event.result_image_url ?? ''); }} disabled={saving}>
+              <Button variant="secondary" onClick={() => { setEditing(false); setResultText(event.result_text ?? ''); setResultImageUrl(event.result_image_url ?? ''); setResultVisible(event.result_visible ?? false); }} disabled={saving}>
                 ยกเลิก
               </Button>
               <Button onClick={save} loading={saving}>
@@ -401,27 +416,41 @@ function ResultsTab({ event, rosterQuery, countsQuery, canEdit, onSaved }) {
           </div>
         ) : (
           <div className="space-y-3">
-            {event.result_text ? (
-              <div className="bg-bg rounded-2xl border border-line p-4">
-                <p className="text-sm text-ink/80 whitespace-pre-line leading-relaxed">{event.result_text}</p>
+            {/* badge สถานะการมองเห็น (admin/organizer เห็นเสมอ) */}
+            {canEdit && (
+              <div className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${event.result_visible ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${event.result_visible ? 'bg-green-500' : 'bg-amber-500'}`} />
+                {event.result_visible ? 'เปิดให้นักศึกษาเห็น' : 'ซ่อนอยู่ (เฉพาะ admin/organizer)'}
               </div>
-            ) : (
-              <p className="text-sm text-ink/40 italic">
-                {canEdit ? 'ยังไม่มีผลการแข่งขัน กดแก้ไขเพื่อเพิ่ม' : 'ยังไม่มีผลการแข่งขัน'}
-              </p>
             )}
 
-            {event.result_image_url && (
-              <a
-                href={event.result_image_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-sm text-cobalt hover:underline bg-cobalt/5 border border-cobalt/20 rounded-xl px-4 py-2.5"
-              >
-                <Image className="w-4 h-4" />
-                ดูรูปภาพ / อัลบั้มกิจกรรม
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
+            {/* แสดงผลเฉพาะเมื่อ visible หรือ canEdit */}
+            {(!canEdit && !event.result_visible) ? (
+              <p className="text-sm text-ink/40 italic">ยังไม่มีการประกาศผลการแข่งขัน</p>
+            ) : (
+              <>
+                {event.result_text ? (
+                  <div className="bg-bg rounded-2xl border border-line p-4">
+                    <p className="text-sm text-ink/80 whitespace-pre-line leading-relaxed">{event.result_text}</p>
+                  </div>
+                ) : (
+                  <p className="text-sm text-ink/40 italic">
+                    {canEdit ? 'ยังไม่มีผลการแข่งขัน กดแก้ไขเพื่อเพิ่ม' : 'ยังไม่มีผลการแข่งขัน'}
+                  </p>
+                )}
+                {event.result_image_url && (
+                  <a
+                    href={event.result_image_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-sm text-cobalt hover:underline bg-cobalt/5 border border-cobalt/20 rounded-xl px-4 py-2.5"
+                  >
+                    <Image className="w-4 h-4" />
+                    ดูรูปภาพ / อัลบั้มกิจกรรม
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                )}
+              </>
             )}
           </div>
         )}
