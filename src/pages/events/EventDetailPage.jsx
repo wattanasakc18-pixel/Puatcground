@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { Pencil, Trash2, Plus, Users, Calendar, Clock, ChevronLeft, Trophy, Image, ExternalLink, Save } from 'lucide-react';
@@ -257,15 +257,28 @@ function ParticipantsTab({ eventId, rosterQuery }) {
 }
 
 // ── Tab: ผลลัพธ์ ─────────────────────────────────────────────────────────────
-function ResultsTab({ event, rosterQuery, countsQuery, canEdit, onSaved }) {
+function ResultsTab({ eventId, rosterQuery, countsQuery, canEdit }) {
   const toast = useToast();
   const queryClient = useQueryClient();
+  const eventQuery = useEvent(eventId);
+  const event = eventQuery.data;
   const [editing, setEditing] = useState(false);
-  const [resultText, setResultText] = useState(event.result_text ?? '');
-  const [resultImageUrl, setResultImageUrl] = useState(event.result_image_url ?? '');
-  const [resultVisible, setResultVisible] = useState(event.result_visible ?? false);
+  const [resultText, setResultText] = useState('');
+  const [resultImageUrl, setResultImageUrl] = useState('');
+  const [resultVisible, setResultVisible] = useState(false);
   const [saving, setSaving] = useState(false);
   const [togglingVisible, setTogglingVisible] = useState(false);
+
+  // sync local form state เมื่อ event โหลดหรืออัปเดต
+  useEffect(() => {
+    if (event && !editing) {
+      setResultText(event.result_text ?? '');
+      setResultImageUrl(event.result_image_url ?? '');
+      setResultVisible(event.result_visible ?? false);
+    }
+  }, [event, editing]);
+
+  if (!event) return <LoadingState />;
 
   const roster = rosterQuery.data ?? [];
   const counts = countsQuery.data ?? [];
@@ -722,7 +735,7 @@ export default function EventDetailPage() {
             {activeTab === 'participants' && <ParticipantsTab eventId={eventId} rosterQuery={rosterQuery} />}
             {activeTab === 'results' && (
               <ResultsTab
-                event={event}
+                eventId={eventId}
                 rosterQuery={rosterQuery}
                 countsQuery={eventCountsQuery}
                 canEdit={canEdit}
