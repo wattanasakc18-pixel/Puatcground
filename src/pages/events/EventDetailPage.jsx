@@ -296,13 +296,14 @@ function ResultsTab({ eventId, rosterQuery, countsQuery, canEdit }) {
   }, [roster]);
 
   const save = async () => {
+    if (!event) return;
+    const id = event.id;
     setSaving(true);
     try {
-      await updateEvent(event.id, { result_text: resultText, result_image_url: resultImageUrl, result_visible: resultVisible });
-      queryClient.invalidateQueries({ queryKey: ['event', event.id] });
+      await updateEvent(id, { result_text: resultText, result_image_url: resultImageUrl, result_visible: resultVisible });
+      queryClient.invalidateQueries({ queryKey: ['event', id] });
       toast('บันทึกผลลัพธ์แล้ว');
       setEditing(false);
-      if (onSaved) onSaved();
     } catch (err) {
       toast(toThaiError(err, 'บันทึกไม่สำเร็จ'), 'error');
     } finally {
