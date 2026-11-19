@@ -385,7 +385,7 @@ function ResultsTab({ event, rosterQuery, countsQuery, canEdit, onSaved }) {
               <input
                 type="url"
                 className="w-full px-3 py-2.5 rounded-xl border border-line bg-white text-sm focus:outline-none focus:ring-2 focus:ring-cobalt/30"
-                placeholder="เช่น https://drive.google.com/... หรือ https://fb.com/..."
+                placeholder=""
                 value={resultImageUrl}
                 onChange={(e) => setResultImageUrl(e.target.value)}
               />
