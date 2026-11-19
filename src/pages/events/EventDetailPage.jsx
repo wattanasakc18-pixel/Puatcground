@@ -368,6 +368,37 @@ function ResultsTab({ event, rosterQuery, countsQuery, canEdit, onSaved }) {
           )}
         </div>
 
+        {/* toggle ปิด/เปิด — บันทึกทันที แยกออกจากฟอร์ม */}
+        {canEdit && (
+          <div className="flex items-center gap-3 bg-bg rounded-xl px-4 py-3 mb-3">
+            <button
+              type="button"
+              role="switch"
+              aria-checked={event.result_visible}
+              disabled={saving}
+              onClick={async () => {
+                setSaving(true);
+                try {
+                  await updateEvent(event.id, { result_visible: !event.result_visible });
+                  queryClient.invalidateQueries({ queryKey: ['event', event.id] });
+                  toast(event.result_visible ? 'ซ่อนผลลัพธ์จากนักศึกษาแล้ว' : 'เปิดให้นักศึกษาเห็นผลลัพธ์แล้ว');
+                } catch (err) {
+                  toast(toThaiError(err, 'บันทึกไม่สำเร็จ'), 'error');
+                } finally {
+                  setSaving(false);
+                }
+              }}
+              className={`relative w-10 h-6 rounded-full transition-colors shrink-0 ${event.result_visible ? 'bg-cobalt' : 'bg-line'}`}
+            >
+              <span className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${event.result_visible ? 'translate-x-5' : 'translate-x-1'}`} />
+            </button>
+            <div>
+              <p className="text-sm font-medium">{event.result_visible ? 'เปิดให้นักศึกษาเห็นผลลัพธ์' : 'ซ่อนผลลัพธ์จากนักศึกษา'}</p>
+              <p className="text-xs text-ink/50">{event.result_visible ? 'นักศึกษาสามารถดูผลการแข่งขันได้' : 'เฉพาะ admin/organizer เท่านั้นที่เห็น'}</p>
+            </div>
+          </div>
+        )}
+
         {editing ? (          <div className="space-y-3">
             <div>
               <label className="block text-sm font-medium mb-1.5">ผลการแข่งขัน / รายละเอียด</label>
@@ -404,8 +435,7 @@ function ResultsTab({ event, rosterQuery, countsQuery, canEdit, onSaved }) {
                 <p className="text-sm font-medium">{resultVisible ? 'เปิดให้นักศึกษาเห็นผลลัพธ์' : 'ซ่อนผลลัพธ์จากนักศึกษา'}</p>
                 <p className="text-xs text-ink/50">{resultVisible ? 'นักศึกษาสามารถดูผลการแข่งขันได้' : 'เฉพาะ admin/organizer เท่านั้นที่เห็น'}</p>
               </div>
-            </div>
-            <div className="flex gap-2 justify-end">
+            </div>            <div className="flex gap-2 justify-end">
               <Button variant="secondary" onClick={() => { setEditing(false); setResultText(event.result_text ?? ''); setResultImageUrl(event.result_image_url ?? ''); setResultVisible(event.result_visible ?? false); }} disabled={saving}>
                 ยกเลิก
               </Button>
@@ -416,14 +446,6 @@ function ResultsTab({ event, rosterQuery, countsQuery, canEdit, onSaved }) {
           </div>
         ) : (
           <div className="space-y-3">
-            {/* badge สถานะการมองเห็น (admin/organizer เห็นเสมอ) */}
-            {canEdit && (
-              <div className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${event.result_visible ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${event.result_visible ? 'bg-green-500' : 'bg-amber-500'}`} />
-                {event.result_visible ? 'เปิดให้นักศึกษาเห็น' : 'ซ่อนอยู่ (เฉพาะ admin/organizer)'}
-              </div>
-            )}
-
             {/* แสดงผลเฉพาะเมื่อ visible หรือ canEdit */}
             {(!canEdit && !event.result_visible) ? (
               <p className="text-sm text-ink/40 italic">ยังไม่มีการประกาศผลการแข่งขัน</p>
