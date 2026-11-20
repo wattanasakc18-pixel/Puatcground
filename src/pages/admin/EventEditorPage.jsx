@@ -1,19 +1,21 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Copy, ImagePlus, X } from 'lucide-react';
+import { ArrowLeft, Copy, ImagePlus, X, Bell } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useEvent, useCategories, useEventCounts } from '../../hooks/useQueries.js';
 import {
   createEvent, updateEvent, createEventLevel, updateEventLevel, deleteEventLevel,
 } from '../../api/events.js';
 import { uploadEventPoster } from '../../api/storage.js';
+import { notifyEventApproved } from '../../api/email.js';
 import { LEVELS, REGISTRATION_TYPES } from '../../lib/constants.js';
 import { toDatetimeLocal, localToTimestamptz, todayStr } from '../../lib/format.js';
 import { toThaiError } from '../../lib/errors.js';
 import { useToast } from '../../components/ui/Toast.jsx';
 import Button from '../../components/ui/Button.jsx';
 import { Field, Input, Select, Textarea, TimeInput } from '../../components/ui/Field.jsx';
+import ConfirmDialog from '../../components/ui/ConfirmDialog.jsx';
 import { LoadingState, ErrorState } from '../../components/ui/States.jsx';
 import { ApprovalBadge } from '../../components/Badges.jsx';
 import FormBuilder from './FormBuilder.jsx';
@@ -444,14 +446,50 @@ export default function EventEditorPage() {
     ? TABS.filter((t) => t.value === 'poster')
     : TABS;
 
+  const [notifyConfirm, setNotifyConfirm] = useState(false);
+  const [notifyBusy, setNotifyBusy] = useState(false);
+  const toast = useToast();
+
+  const handleNotify = async () => {
+    if (!event) return;
+    setNotifyBusy(true);
+    try {
+      const res = await notifyEventApproved(event.id);
+      if (res.sentStudents > 0) {
+        toast(`ส่งอีเมลแจ้งเตือนกิจกรรม "${event.title}" ให้นักศึกษาแล้ว (${res.sentStudents} คน)`);
+      } else if (res.creatorNotified) {
+        toast(`ส่งอีเมลแจ้งเตือนไปยังผู้จัดกิจกรรม "${event.title}" แล้ว`);
+      } else {
+        toast('ไม่มีอีเมลนักศึกษาที่ต้องส่งแจ้งเตือน', 'info');
+      }
+      setNotifyConfirm(false);
+    } catch (err) {
+      toast(toThaiError(err, 'ส่งอีเมลแจ้งเตือนไม่สำเร็จ'), 'error');
+      setNotifyConfirm(false);
+    } finally {
+      setNotifyBusy(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <Link to="/admin/events" aria-label="กลับไปรายการกิจกรรม" className="p-2 rounded-lg hover:bg-line/60">
-          <ArrowLeft className="w-5 h-5" />
-        </Link>
-        <h1 className="text-xl font-bold">{isNew ? 'สร้างกิจกรรมใหม่' : `แก้ไข: ${event?.title ?? ''}`}</h1>
-        {!isNew && event && <ApprovalBadge status={event.approval_status} />}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-3 flex-wrap">
+          <Link to="/admin/events" aria-label="กลับไปรายการกิจกรรม" className="p-2 rounded-lg hover:bg-line/60">
+            <ArrowLeft className="w-5 h-5" />
+          </Link>
+          <h1 className="text-xl font-bold">{isNew ? 'สร้างกิจกรรมใหม่' : `แก้ไข: ${event?.title ?? ''}`}</h1>
+          {!isNew && event && <ApprovalBadge status={event.approval_status} />}
+        </div>
+        {!isNew && isAdmin && event?.approval_status === 'approved' && (
+          <Button
+            variant="secondary"
+            onClick={() => setNotifyConfirm(true)}
+            disabled={notifyBusy}
+          >
+            <Bell className="w-4 h-4" /> ส่งแจ้งเตือนอีเมล
+          </Button>
+        )}
       </div>
 
       {locked && (
@@ -498,6 +536,16 @@ export default function EventEditorPage() {
           )}
         </>
       )}
+
+      <ConfirmDialog
+        open={notifyConfirm}
+        title="ส่งอีเมลแจ้งเตือนกิจกรรม"
+        message={`ต้องการส่งอีเมลแจ้งเตือนกิจกรรม "${event?.title}" ไปยังนักศึกษาทุกคนที่มีอีเมลในระบบใช่หรือไม่?\n\nระบบจะส่งอีเมลแจ้งว่ามีกิจกรรมใหม่เปิดรับสมัคร`}
+        confirmLabel="ส่งอีเมลแจ้งเตือน"
+        loading={notifyBusy}
+        onConfirm={handleNotify}
+        onCancel={() => setNotifyConfirm(false)}
+      />
     </div>
   );
 }
