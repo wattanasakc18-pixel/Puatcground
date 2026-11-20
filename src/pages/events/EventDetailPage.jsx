@@ -669,33 +669,30 @@ export default function EventDetailPage() {
 
           {/* Content overlay at bottom */}
           <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6 bg-gradient-to-t from-black/60 to-transparent">
-            <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-              <div className="flex flex-wrap items-center gap-2">
-                {event.event_categories?.name && (
-                  <span className="text-xs font-medium bg-white/20 text-white rounded-full px-2.5 py-0.5 backdrop-blur-sm">
-                    {event.event_categories.name}
-                  </span>
-                )}
-                <span className="text-xs text-white/70">ปีการศึกษา {event.academic_year}</span>
-                <span className="text-xs font-medium bg-white/20 text-white rounded-full px-2.5 py-0.5 backdrop-blur-sm">
-                  {typeLabel}
-                </span>
-              </div>
-              {/* runMeta badge */}
-              {runMeta && (
-                <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm ${runMeta.className}`}>
-                  <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${runMeta.dot}`} />
-                  {runMeta.label}
-                </div>
-              )}
-            </div>
-            <h1 className="text-xl sm:text-2xl font-bold text-white leading-snug">{event.title}</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-white leading-snug mb-2">{event.title}</h1>
             {dateRange && (
-              <p className="text-white/80 text-sm mt-1 flex items-center gap-1.5">
+              <p className="text-white/80 text-sm mb-2 flex items-center gap-1.5">
                 <Calendar className="w-4 h-4" />
                 {dateRange}
               </p>
             )}
+            <div className="flex flex-wrap items-center gap-2">
+              {event.event_categories?.name && (
+                <span className="text-xs font-medium bg-white/20 text-white rounded-full px-2.5 py-0.5 backdrop-blur-sm">
+                  {event.event_categories.name}
+                </span>
+              )}
+              <span className="text-xs text-white/70">ปีการศึกษา {event.academic_year}</span>
+              <span className="text-xs font-medium bg-white/20 text-white rounded-full px-2.5 py-0.5 backdrop-blur-sm">
+                {typeLabel}
+              </span>
+              {runMeta && (
+                <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full ${runMeta.className}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${runMeta.dot}`} />
+                  {runMeta.label}
+                </span>
+              )}
+            </div>
           </div>
         </div>
       </div>
