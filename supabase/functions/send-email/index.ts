@@ -94,6 +94,45 @@ const TEMPLATES: Record<string, (data: Record<string, string>) => { subject: str
         </div>
       </div>`,
   }),
+
+  event_approved: (d) => ({
+    subject: `✅ กิจกรรม "${d.eventTitle}" ได้รับการอนุมัติแล้ว`,
+    html: `
+      <div style="font-family:sans-serif;max-width:560px;margin:0 auto">
+        <div style="background:#15803d;padding:24px;border-radius:12px 12px 0 0">
+          <h1 style="color:white;margin:0;font-size:20px">กิจกรรมได้รับการอนุมัติ ✅</h1>
+        </div>
+        <div style="background:#f8fafc;padding:24px;border-radius:0 0 12px 12px;border:1px solid #e2e8f0">
+          <p style="color:#1e293b">สวัสดี <strong>${d.name}</strong></p>
+          <p style="color:#475569">กิจกรรม <strong>${d.eventTitle}</strong> ที่คุณส่งขออนุมัติได้รับการอนุมัติแล้ว!</p>
+          <div style="background:white;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin:16px 0">
+            <p style="margin:4px 0;color:#64748b;font-size:14px">📅 ปีการศึกษา: <strong style="color:#1e293b">${d.academicYear}</strong></p>
+          </div>
+          <p style="color:#475569">ขณะนี้นักศึกษาสามารถเห็นและลงชื่อเข้าร่วมกิจกรรมได้แล้ว</p>
+          <p style="color:#94a3b8;font-size:12px;margin-top:24px">ระบบลงชื่อตัวแทนทำกิจกรรม · Puatc Ground</p>
+        </div>
+      </div>`,
+  }),
+
+  new_event_notify: (d) => ({
+    subject: `🎉 กิจกรรมใหม่! "${d.eventTitle}" เปิดรับสมัครแล้ว`,
+    html: `
+      <div style="font-family:sans-serif;max-width:560px;margin:0 auto">
+        <div style="background:#2563eb;padding:24px;border-radius:12px 12px 0 0">
+          <h1 style="color:white;margin:0;font-size:20px">กิจกรรมใหม่เปิดแล้ว 🎉</h1>
+        </div>
+        <div style="background:#f8fafc;padding:24px;border-radius:0 0 12px 12px;border:1px solid #e2e8f0">
+          <p style="color:#1e293b">สวัสดี <strong>${d.name}</strong></p>
+          <p style="color:#475569">มีกิจกรรมใหม่เปิดรับสมัครแล้ว!</p>
+          <div style="background:white;border:1px solid #e2e8f0;border-radius:8px;padding:16px;margin:16px 0">
+            <p style="margin:4px 0;color:#1e293b;font-size:16px;font-weight:bold">${d.eventTitle}</p>
+            <p style="margin:4px 0;color:#64748b;font-size:14px">📅 ปีการศึกษา: <strong style="color:#1e293b">${d.academicYear}</strong></p>
+          </div>
+          <p style="color:#475569">เข้าสู่ระบบเพื่อดูรายละเอียดและลงชื่อเข้าร่วมได้เลย</p>
+          <p style="color:#94a3b8;font-size:12px;margin-top:24px">ระบบลงชื่อตัวแทนทำกิจกรรม · Puatc Ground</p>
+        </div>
+      </div>`,
+  }),
 };
 
 serve(async (req) => {

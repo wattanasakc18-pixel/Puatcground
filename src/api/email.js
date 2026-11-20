@@ -35,3 +35,23 @@ export function emailEventOpen({ email, name, eventTitle, eventDate, closeDate, 
 export function emailPasswordReset({ email, name, newPassword }) {
   return sendEmail('password_reset', email, { name, newPassword });
 }
+
+export async function notifyEventApproved(eventId) {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) return;
+  const res = await fetch(
+    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/notify-event-approved`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ event_id: eventId }),
+    },
+  );
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.error ?? 'ส่งอีเมลแจ้งเตือนไม่สำเร็จ');
+  }
+}

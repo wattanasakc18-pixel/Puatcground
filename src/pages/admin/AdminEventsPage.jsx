@@ -5,6 +5,7 @@ import { Plus, Pencil, Copy, Trash2, CalendarCog, Search, Check, Lock } from 'lu
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useEvents, useCategories, useAllCounts } from '../../hooks/useQueries.js';
 import { deleteEvent, copyEvent, approveEvent } from '../../api/events.js';
+import { notifyEventApproved } from '../../api/email.js';
 import { toThaiError } from '../../lib/errors.js';
 import { useToast } from '../../components/ui/Toast.jsx';
 import Button from '../../components/ui/Button.jsx';
@@ -85,6 +86,8 @@ export default function AdminEventsPage() {
     setBusy(true);
     try {
       await approveEvent(approveTarget.id);
+      // ส่งอีเมลแจ้ง organizer + นักศึกษาทุกคน (ไม่บล็อกถ้าส่งไม่สำเร็จ)
+      notifyEventApproved(approveTarget.id).catch(() => {});
       toast('อนุมัติกิจกรรมแล้ว นักเรียนจึงจะเห็นและลงชื่อได้');
       setApproveTarget(null);
       queryClient.invalidateQueries({ queryKey: ['events'] });
