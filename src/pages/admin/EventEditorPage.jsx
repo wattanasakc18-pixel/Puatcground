@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Copy, ImagePlus, X } from 'lucide-react';
+import { ArrowLeft, Check, Copy, ImagePlus, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useEvent, useCategories, useEventCounts } from '../../hooks/useQueries.js';
 import {
-  createEvent, updateEvent, createEventLevel, updateEventLevel, deleteEventLevel,
+  createEvent, updateEvent, createEventLevel, updateEventLevel, deleteEventLevel, approveEvent,
 } from '../../api/events.js';
 import { uploadEventPoster } from '../../api/storage.js';
 import { notifyEventApproved } from '../../api/email.js';
@@ -435,6 +435,31 @@ export default function EventEditorPage() {
 
   // เก็บ state ของ LevelsTab ที่นี่เพื่อไม่ให้ข้อมูลหายเวลาเปลี่ยน tab
   const [levelsRows, setLevelsRows] = useState(null);
+  const [approving, setApproving] = useState(false);
+
+  const handleApprove = async () => {
+    if (!event) return;
+    setApproving(true);
+    try {
+      await approveEvent(event.id);
+      await queryClient.invalidateQueries({ queryKey: ['event', event.id] });
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      toast('อนุมัติกิจกรรมแล้ว');
+
+      // ส่งแจ้งเตือน organizer + นักศึกษาทุกคนอัตโนมัติ
+      notifyEventApproved(event.id)
+        .then((res) => {
+          if (res?.sentStudents > 0) {
+            toast(`ส่งอีเมลแจ้งเตือนให้นักศึกษาแล้ว (${res.sentStudents} คน)`);
+          }
+        })
+        .catch((e) => console.warn('notifyEventApproved failed:', e));
+    } catch (err) {
+      toast(toThaiError(err, 'อนุมัติไม่สำเร็จ'), 'error');
+    } finally {
+      setApproving(false);
+    }
+  };
 
   // เมื่อ event โหลดเสร็จและยังไม่มี levelsRows ให้ init ครั้งเดียว
   useEffect(() => {
@@ -462,12 +487,19 @@ export default function EventEditorPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <Link to="/admin/events" aria-label="กลับไปรายการกิจกรรม" className="p-2 rounded-lg hover:bg-line/60">
-          <ArrowLeft className="w-5 h-5" />
-        </Link>
-        <h1 className="text-xl font-bold">{isNew ? 'สร้างกิจกรรมใหม่' : `แก้ไข: ${event?.title ?? ''}`}</h1>
-        {!isNew && event && <ApprovalBadge status={event.approval_status} />}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-3">
+          <Link to="/admin/events" aria-label="กลับไปรายการกิจกรรม" className="p-2 rounded-lg hover:bg-line/60">
+            <ArrowLeft className="w-5 h-5" />
+          </Link>
+          <h1 className="text-xl font-bold">{isNew ? 'สร้างกิจกรรมใหม่' : `แก้ไข: ${event?.title ?? ''}`}</h1>
+          {!isNew && event && <ApprovalBadge status={event.approval_status} />}
+        </div>
+        {isAdmin && event && event.approval_status === 'pending' && (
+          <Button onClick={handleApprove} loading={approving}>
+            <Check className="w-4 h-4" /> อนุมัติคำขอนี้
+          </Button>
+        )}
       </div>
 
       {locked && (
