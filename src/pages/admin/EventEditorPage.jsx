@@ -160,6 +160,8 @@ function LevelsTab({ event, rows, setRows }) {
       reg_close_at: other.reg_close_at,
       min_per_dept: other.min_per_dept,
       max_per_dept: other.max_per_dept,
+      event_start_time: other.event_start_time,
+      event_end_time: other.event_end_time,
     });
   };
 
