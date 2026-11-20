@@ -265,7 +265,6 @@ function LevelsTab({ event, rows, setRows }) {
                     value={r.event_start_time}
                     onChange={(val) => setRow(r.level, { event_start_time: val })}
                   />
-                  <p className="text-xs text-ink/40 mt-1">แจ้งเตือนก่อน 10 นาที</p>
                 </Field>
                 <Field label="เวลาสิ้นสุดกิจกรรม" htmlFor={`end-${r.level}`}>
                   <TimeInput
@@ -273,7 +272,6 @@ function LevelsTab({ event, rows, setRows }) {
                     value={r.event_end_time}
                     onChange={(val) => setRow(r.level, { event_end_time: val })}
                   />
-                  <p className="text-xs text-ink/40 mt-1">แจ้งเตือนหลัง 10 นาที</p>
                 </Field>
                 <Field label="เปิดรับสมัคร" required error={e.reg_open_at} htmlFor={`open-${r.level}`}>
                   <Input id={`open-${r.level}`} type="date" value={r.reg_open_at} onChange={(ev) => setRow(r.level, { reg_open_at: ev.target.value })} />
