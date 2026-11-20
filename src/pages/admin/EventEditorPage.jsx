@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Copy, ImagePlus, X, Bell } from 'lucide-react';
+import { ArrowLeft, Copy, ImagePlus, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useEvent, useCategories, useEventCounts } from '../../hooks/useQueries.js';
 import {
@@ -15,7 +15,6 @@ import { toThaiError } from '../../lib/errors.js';
 import { useToast } from '../../components/ui/Toast.jsx';
 import Button from '../../components/ui/Button.jsx';
 import { Field, Input, Select, Textarea, TimeInput } from '../../components/ui/Field.jsx';
-import ConfirmDialog from '../../components/ui/ConfirmDialog.jsx';
 import { LoadingState, ErrorState } from '../../components/ui/States.jsx';
 import { ApprovalBadge } from '../../components/Badges.jsx';
 import FormBuilder from './FormBuilder.jsx';
@@ -193,6 +192,8 @@ function LevelsTab({ event, rows, setRows }) {
     if (Object.keys(errs).length > 0) return;
     setSaving(true);
     try {
+      const isInitialSetup = (event.event_levels?.length ?? 0) === 0;
+      const isCopiedNew = Boolean(event.copied_from && !localStorage.getItem(`notified_${event.id}`));
       for (const r of rows) {
         if (r.enabled) {
           const payload = {
@@ -221,6 +222,18 @@ function LevelsTab({ event, rows, setRows }) {
       queryClient.invalidateQueries({ queryKey: ['events'] });
       queryClient.invalidateQueries({ queryKey: ['event-counts', event.id] });
       toast('บันทึกระดับที่เข้าร่วมแล้ว');
+
+      // ถ้าเป็นกิจกรรมที่อนุมัติแล้ว และเพิ่งตั้งค่าระดับครั้งแรก (เปิดกิจกรรมใหม่) ให้ส่งแจ้งเตือนนักศึกษาทุกคนอัตโนมัติทันที
+      if ((isInitialSetup || isCopiedNew) && event.approval_status === 'approved') {
+        localStorage.setItem(`notified_${event.id}`, 'true');
+        notifyEventApproved(event.id)
+          .then((res) => {
+            if (res?.sentStudents > 0) {
+              toast(`ส่งอีเมลแจ้งเตือนกิจกรรมใหม่ให้นักศึกษาอัตโนมัติแล้ว (${res.sentStudents} คน)`);
+            }
+          })
+          .catch((e) => console.warn('Auto notify new event failed:', e));
+      }
     } catch (err) {
       toast(toThaiError(err, 'บันทึกไม่สำเร็จ'), 'error');
     } finally {
@@ -441,55 +454,19 @@ export default function EventEditorPage() {
   const visibleTabs = isNew
     ? TABS.slice(0, 1)
     : canEditAll
-    ? TABS
-    : isOrganizer
-    ? TABS.filter((t) => t.value === 'poster')
-    : TABS;
-
-  const [notifyConfirm, setNotifyConfirm] = useState(false);
-  const [notifyBusy, setNotifyBusy] = useState(false);
-  const toast = useToast();
-
-  const handleNotify = async () => {
-    if (!event) return;
-    setNotifyBusy(true);
-    try {
-      const res = await notifyEventApproved(event.id);
-      if (res.sentStudents > 0) {
-        toast(`ส่งอีเมลแจ้งเตือนกิจกรรม "${event.title}" ให้นักศึกษาแล้ว (${res.sentStudents} คน)`);
-      } else if (res.creatorNotified) {
-        toast(`ส่งอีเมลแจ้งเตือนไปยังผู้จัดกิจกรรม "${event.title}" แล้ว`);
-      } else {
-        toast('ไม่มีอีเมลนักศึกษาที่ต้องส่งแจ้งเตือน', 'info');
-      }
-      setNotifyConfirm(false);
-    } catch (err) {
-      toast(toThaiError(err, 'ส่งอีเมลแจ้งเตือนไม่สำเร็จ'), 'error');
-      setNotifyConfirm(false);
-    } finally {
-      setNotifyBusy(false);
-    }
-  };
+      ? TABS
+      : isOrganizer
+        ? TABS.filter((t) => t.value === 'poster')
+        : TABS;
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-3 flex-wrap">
-          <Link to="/admin/events" aria-label="กลับไปรายการกิจกรรม" className="p-2 rounded-lg hover:bg-line/60">
-            <ArrowLeft className="w-5 h-5" />
-          </Link>
-          <h1 className="text-xl font-bold">{isNew ? 'สร้างกิจกรรมใหม่' : `แก้ไข: ${event?.title ?? ''}`}</h1>
-          {!isNew && event && <ApprovalBadge status={event.approval_status} />}
-        </div>
-        {!isNew && isAdmin && event?.approval_status === 'approved' && (
-          <Button
-            variant="secondary"
-            onClick={() => setNotifyConfirm(true)}
-            disabled={notifyBusy}
-          >
-            <Bell className="w-4 h-4" /> ส่งแจ้งเตือนอีเมล
-          </Button>
-        )}
+      <div className="flex items-center gap-3">
+        <Link to="/admin/events" aria-label="กลับไปรายการกิจกรรม" className="p-2 rounded-lg hover:bg-line/60">
+          <ArrowLeft className="w-5 h-5" />
+        </Link>
+        <h1 className="text-xl font-bold">{isNew ? 'สร้างกิจกรรมใหม่' : `แก้ไข: ${event?.title ?? ''}`}</h1>
+        {!isNew && event && <ApprovalBadge status={event.approval_status} />}
       </div>
 
       {locked && (
@@ -506,16 +483,16 @@ export default function EventEditorPage() {
       {(isNew || event) && !locked && (
         <>
           <div className="flex gap-1 bg-white border border-line rounded-2xl p-1 overflow-x-auto" role="tablist">            {visibleTabs.map((t) => (
-              <button
-                key={t.value}
-                role="tab"
-                aria-selected={tab === t.value}
-                onClick={() => setSearchParams({ tab: t.value })}
-                className={`min-h-11 px-4 rounded-xl text-sm font-medium whitespace-nowrap ${tab === t.value ? 'bg-cobalt text-white' : 'text-ink/70 hover:bg-bg'}`}
-              >
-                {t.label}
-              </button>
-            ))}
+            <button
+              key={t.value}
+              role="tab"
+              aria-selected={tab === t.value}
+              onClick={() => setSearchParams({ tab: t.value })}
+              className={`min-h-11 px-4 rounded-xl text-sm font-medium whitespace-nowrap ${tab === t.value ? 'bg-cobalt text-white' : 'text-ink/70 hover:bg-bg'}`}
+            >
+              {t.label}
+            </button>
+          ))}
           </div>
 
           {tab === 'general' && (
@@ -536,16 +513,6 @@ export default function EventEditorPage() {
           )}
         </>
       )}
-
-      <ConfirmDialog
-        open={notifyConfirm}
-        title="ส่งอีเมลแจ้งเตือนกิจกรรม"
-        message={`ต้องการส่งอีเมลแจ้งเตือนกิจกรรม "${event?.title}" ไปยังนักศึกษาทุกคนที่มีอีเมลในระบบใช่หรือไม่?\n\nระบบจะส่งอีเมลแจ้งว่ามีกิจกรรมใหม่เปิดรับสมัคร`}
-        confirmLabel="ส่งอีเมลแจ้งเตือน"
-        loading={notifyBusy}
-        onConfirm={handleNotify}
-        onCancel={() => setNotifyConfirm(false)}
-      />
     </div>
   );
 }

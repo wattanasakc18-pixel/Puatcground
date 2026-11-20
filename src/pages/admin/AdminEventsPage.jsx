@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
-import { Plus, Pencil, Copy, Trash2, CalendarCog, Search, Check, Lock, Bell } from 'lucide-react';
+import { Plus, Pencil, Copy, Trash2, CalendarCog, Search, Check, Lock } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useEvents, useCategories, useAllCounts } from '../../hooks/useQueries.js';
 import { deleteEvent, copyEvent, approveEvent } from '../../api/events.js';
@@ -30,7 +30,6 @@ export default function AdminEventsPage() {
   const [busy, setBusy] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [approveTarget, setApproveTarget] = useState(null);
-  const [notifyTarget, setNotifyTarget] = useState(null);
   const toast = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -91,41 +90,19 @@ export default function AdminEventsPage() {
       await approveEvent(target.id);
       setApproveTarget(null);
       queryClient.invalidateQueries({ queryKey: ['events'] });
-      toast('อนุมัติกิจกรรมแล้ว นักเรียนจึงจะเห็นและลงชื่อได้');
+      toast('อนุมัติกิจกรรมแล้ว');
 
-      // ส่งอีเมลแจ้ง organizer + นักศึกษาทุกคน
-      try {
-        const res = await notifyEventApproved(target.id);
-        if (res.sentStudents > 0) {
-          toast(`ส่งอีเมลแจ้งเตือนให้นักศึกษาแล้ว (${res.sentStudents} คน)`);
-        }
-      } catch (emailErr) {
-        console.warn('notifyEventApproved failed:', emailErr);
-      }
+      // ส่งอีเมลแจ้ง organizer + นักศึกษาทุกคนอัตโนมัติ (fire-and-forget)
+      notifyEventApproved(target.id)
+        .then((res) => {
+          if (res?.sentStudents > 0) {
+            toast(`ส่งอีเมลแจ้งเตือนให้นักศึกษาแล้ว (${res.sentStudents} คน)`);
+          }
+        })
+        .catch((e) => console.warn('notifyEventApproved failed:', e));
     } catch (err) {
       toast(toThaiError(err, 'อนุมัติไม่สำเร็จ'), 'error');
       setApproveTarget(null);
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const doNotify = async () => {
-    if (!notifyTarget) return;
-    setBusy(true);
-    try {
-      const res = await notifyEventApproved(notifyTarget.id);
-      if (res.sentStudents > 0) {
-        toast(`ส่งอีเมลแจ้งเตือนกิจกรรม "${notifyTarget.title}" ให้นักศึกษาแล้ว (${res.sentStudents} คน)`);
-      } else if (res.creatorNotified) {
-        toast(`ส่งอีเมลแจ้งเตือนไปยังผู้จัดกิจกรรม "${notifyTarget.title}" แล้ว`);
-      } else {
-        toast('ไม่มีอีเมลนักศึกษาที่ต้องส่งแจ้งเตือน', 'info');
-      }
-      setNotifyTarget(null);
-    } catch (err) {
-      toast(toThaiError(err, 'ส่งอีเมลแจ้งเตือนไม่สำเร็จ'), 'error');
-      setNotifyTarget(null);
     } finally {
       setBusy(false);
     }
@@ -200,15 +177,6 @@ export default function AdminEventsPage() {
                   {canApprove && (
                     <Button onClick={() => setApproveTarget(ev)}><Check className="w-4 h-4" /> อนุมัติ</Button>
                   )}
-                  {isAdmin && !pending && (
-                    <Button
-                      variant="secondary"
-                      onClick={() => setNotifyTarget(ev)}
-                      title="ส่งอีเมลแจ้งเตือนนักศึกษาทุกคน"
-                    >
-                      <Bell className="w-4 h-4" /> ส่งแจ้งเตือน
-                    </Button>
-                  )}
                   {canEdit ? (
                     <Link to={`/admin/events/${ev.id}/edit`}><Button variant="secondary"><Pencil className="w-4 h-4" /> แก้ไข</Button></Link>
                   ) : (
@@ -259,21 +227,11 @@ export default function AdminEventsPage() {
       <ConfirmDialog
         open={Boolean(approveTarget)}
         title="อนุมัติกิจกรรม"
-        message={`อนุมัติ "${approveTarget?.title}" ใช่หรือไม่?\nหลังอนุมัติ นักเรียนจะเห็นกิจกรรมนี้และลงชื่อได้ทันทีตามช่วงรับสมัครที่ตั้งไว้ และผู้จัดจะแก้ไขกิจกรรมนี้ไม่ได้แล้ว`}
+        message={`อนุมัติ "${approveTarget?.title}" ใช่หรือไม่?\nหลังอนุมัติ นักเรียนจะเห็นกิจกรรมนี้และลงชื่อได้ทันทีตามช่วงรับสมัครที่ตั้งไว้ และผู้จัดจะแก้ไขกิจกรรมนี้ไม่ได้แล้ว\nระบบจะส่งอีเมลแจ้งเตือนนักศึกษาทุกคนอัตโนมัติ`}
         confirmLabel="อนุมัติ"
         loading={busy}
         onConfirm={doApprove}
         onCancel={() => setApproveTarget(null)}
-      />
-
-      <ConfirmDialog
-        open={Boolean(notifyTarget)}
-        title="ส่งอีเมลแจ้งเตือนกิจกรรม"
-        message={`ต้องการส่งอีเมลแจ้งเตือนกิจกรรม "${notifyTarget?.title}" ไปยังนักศึกษาทุกคนที่มีอีเมลในระบบใช่หรือไม่?\n\nระบบจะส่งอีเมลแจ้งว่ามีกิจกรรมใหม่เปิดรับสมัคร`}
-        confirmLabel="ส่งอีเมลแจ้งเตือน"
-        loading={busy}
-        onConfirm={doNotify}
-        onCancel={() => setNotifyTarget(null)}
       />
     </div>
   );
