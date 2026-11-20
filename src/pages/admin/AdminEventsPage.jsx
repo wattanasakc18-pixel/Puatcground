@@ -153,9 +153,9 @@ export default function AdminEventsPage() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <h2 className="font-semibold">{ev.title}</h2>
                     <ApprovalBadge status={ev.approval_status} />
-                    {ev.event_levels.length === 0
+                    {(ev.event_levels?.length ?? 0) === 0
                       ? <span className="text-xs text-coral">ยังไม่ได้ตั้งระดับ</span>
-                      : ev.event_levels.map((l) => <LevelBadge key={l.id} level={l.level} />)}
+                      : (ev.event_levels ?? []).map((l) => <LevelBadge key={l.id} level={l.level} />)}
                   </div>
                   <p className="text-sm text-ink/60 mt-1">
                     ปีการศึกษา {ev.academic_year}

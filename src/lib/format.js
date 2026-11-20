@@ -6,6 +6,7 @@ export function fmtDate(value, opts = {}) {
   const d = typeof value === 'string' && value.length === 10
     ? new Date(`${value}T00:00:00+07:00`)
     : new Date(value);
+  if (Number.isNaN(d.getTime())) return '-';
   return d.toLocaleDateString('th-TH', {
     timeZone: TZ, day: 'numeric', month: 'short', year: 'numeric', ...opts,
   });
@@ -13,7 +14,9 @@ export function fmtDate(value, opts = {}) {
 
 export function fmtDateTime(value) {
   if (!value) return '-';
-  return new Date(value).toLocaleString('th-TH', {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return '-';
+  return d.toLocaleString('th-TH', {
     timeZone: TZ, day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
   });
 }

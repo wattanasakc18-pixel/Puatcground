@@ -3,7 +3,7 @@ import { MapPin, Clock, User2 } from 'lucide-react';
 import { StatusBadge, LevelBadge, RegisteredBadge } from './Badges.jsx';
 import { fmtDate } from '../lib/format.js';
 
-export default function EventCard({ event, levels, status, registered }) {
+export default function EventCard({ event, levels = [], status, registered }) {
   // วันจัดกิจกรรม (เร็วสุด)
   const date = levels.map((l) => l.event_date).filter(Boolean).sort()[0];
   const d = date ? new Date(`${date}T00:00:00+07:00`) : null;

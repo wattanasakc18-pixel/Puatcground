@@ -38,7 +38,7 @@ export default function FormBuilder({ event, hasRegistrations }) {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [pendingSave, setPendingSave] = useState(null);
   const [busy, setBusy] = useState(false);
-  const [previewLevel, setPreviewLevel] = useState(event.event_levels[0]?.level ?? LEVELS[0]);
+  const [previewLevel, setPreviewLevel] = useState(event.event_levels?.[0]?.level ?? LEVELS[0]);
   const [previewValues, setPreviewValues] = useState({});
 
   const fields = fieldsQuery.data ?? [];
@@ -47,7 +47,7 @@ export default function FormBuilder({ event, hasRegistrations }) {
     [fields],
   );
   const inactive = fields.filter((f) => !f.is_active);
-  const eventLevels = event.event_levels.map((l) => l.level);
+  const eventLevels = (event.event_levels ?? []).map((l) => l.level);
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ['form-fields', event.id] });

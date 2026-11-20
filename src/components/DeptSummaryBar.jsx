@@ -7,20 +7,23 @@ import { LevelBadge } from './Badges.jsx';
  * eventLevels — event_levels[] พร้อม min_per_dept, max_per_dept (optional)
  */
 export default function DeptSummaryBar({ counts = [], departments = [], eventLevels = [] }) {
-  const hasMin = eventLevels.some((l) => l.min_per_dept != null) || counts.some((c) => c.min_per_dept != null);
+  const safeEventLevels = eventLevels ?? [];
+  const safeCounts = counts ?? [];
+  const safeDepartments = departments ?? [];
+  const hasMin = safeEventLevels.some((l) => l.min_per_dept != null) || safeCounts.some((c) => c.min_per_dept != null);
   if (!hasMin) return null;
 
   // สร้าง lookup จาก counts ที่มีอยู่: key = `${event_level_id}-${department_id}`
-  const countMap = new Map(counts.map((c) => [`${c.event_level_id}-${c.department_id}`, c]));
+  const countMap = new Map(safeCounts.map((c) => [`${c.event_level_id}-${c.department_id}`, c]));
 
   // สร้าง full list: ทุก level × ทุก department
   // ถ้ามี eventLevels และ departments ให้ build เอง ไม่งั้นใช้ counts เดิม
   let rows;
-  if (eventLevels.length > 0 && departments.length > 0) {
+  if (safeEventLevels.length > 0 && safeDepartments.length > 0) {
     rows = [];
-    for (const lv of eventLevels) {
+    for (const lv of safeEventLevels) {
       if (lv.min_per_dept == null) continue; // level ไม่ตั้งขั้นต่ำ ข้ามได้
-      for (const dept of departments) {
+      for (const dept of safeDepartments) {
         const existing = countMap.get(`${lv.id}-${dept.id}`);
         rows.push({
           event_level_id: lv.id,
@@ -36,7 +39,7 @@ export default function DeptSummaryBar({ counts = [], departments = [], eventLev
     }
   } else {
     // fallback: ใช้ counts เดิมเฉพาะที่ is_below_min
-    rows = counts.filter((c) => c.is_below_min);
+    rows = safeCounts.filter((c) => c.is_below_min);
   }
 
   const belowMin = rows.filter((r) => r.is_below_min);

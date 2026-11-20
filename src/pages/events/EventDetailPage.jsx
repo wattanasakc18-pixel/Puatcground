@@ -173,6 +173,12 @@ function InfoTab({ event }) {
                 <div>
                   <p className="text-xs text-ink/40 mb-0.5">วันจัดกิจกรรม</p>
                   <p className="text-base font-bold text-ink">{fmtDate(l.event_date, { weekday: 'long' })}</p>
+                  {(l.event_start_time || l.event_end_time) && (
+                    <p className="text-xs text-ink/60 mt-0.5">
+                      เวลา {l.event_start_time ? l.event_start_time.slice(0, 5) : ''}
+                      {l.event_end_time ? ` – ${l.event_end_time.slice(0, 5)}` : ''} น.
+                    </p>
+                  )}
                 </div>
               </div>
               {/* ช่วงรับสมัคร */}
@@ -529,7 +535,7 @@ export default function EventDetailPage() {
     : myLevel;
   const countRow = countsQuery.data?.find((c) => c.event_level_id === effectiveLevel?.id);
   const status = registrationStatus(effectiveLevel, countRow);
-  const canSubmit = isAdmin || status === 'open';
+  const canSubmit = Boolean(effectiveLevel) && (isAdmin || status === 'open');
   const canModify = isAdmin || (effectiveLevel && new Date() <= new Date(effectiveLevel.reg_close_at));
 
   const myRegs = useMemo(
@@ -687,7 +693,7 @@ export default function EventDetailPage() {
                 {typeLabel}
               </span>
               {runMeta && (
-                <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full ${runMeta.className}`}>
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-white/20 text-white backdrop-blur-sm border border-white/20">
                   <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${runMeta.dot}`} />
                   {runMeta.label}
                 </span>
@@ -701,20 +707,20 @@ export default function EventDetailPage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         <div className="bg-white rounded-2xl border border-line px-4 py-3 text-center">
           <p className="text-2xl font-bold text-cobalt">{rosterCount}</p>
-          <p className="text-xs text-ink/50 mt-0.5">ผู้ลงชื่อ</p>
+          <p className="text-xs text-ink/50 mt-0.5">ผู้ลงชื่อทั้งหมด</p>
         </div>
         <div className="bg-white rounded-2xl border border-line px-4 py-3 text-center">
-          <p className="text-2xl font-bold text-ink">{event.event_levels.length}</p>
+          <p className="text-2xl font-bold text-ink">{event.event_levels?.length ?? 0}</p>
           <p className="text-xs text-ink/50 mt-0.5">ระดับที่เข้าร่วม</p>
         </div>
-        {event.event_levels.map((l) => {
+        {(event.event_levels ?? []).map((l) => {
           const cRow = countsQuery.data?.find((c) => c.event_level_id === l.id);
           const filled = cRow?.registered ?? 0;
           const max = l.max_per_dept;
           return (
             <div key={l.id} className="bg-white rounded-2xl border border-line px-4 py-3 text-center">
               <p className="text-2xl font-bold text-ink">{filled}{max ? `/${max}` : ''}</p>
-              <p className="text-xs text-ink/50 mt-0.5">โควตา {l.level}</p>
+              <p className="text-xs text-ink/50 mt-0.5">โควตาแผนก {l.level}</p>
             </div>
           );
         })}
@@ -760,10 +766,10 @@ export default function EventDetailPage() {
           />
 
           {/* ช่วงรับสมัคร (ต่อระดับ) */}
-          {event.event_levels.length > 0 && (
+          {(event.event_levels?.length ?? 0) > 0 && (
             <div className="bg-white rounded-2xl border border-line p-4 space-y-3">
               <h3 className="text-sm font-semibold">ช่วงเปิดรับสมัคร</h3>
-              {event.event_levels.map((l) => (
+              {(event.event_levels ?? []).map((l) => (
                 <div key={l.id} className="space-y-1">
                   <LevelBadge level={l.level} />
                   <p className="text-xs text-ink/60">

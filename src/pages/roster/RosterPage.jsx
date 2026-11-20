@@ -55,7 +55,7 @@ export default function RosterPage() {
   );
 
   const selectableEvents = events.filter(
-    (e) => (!year || e.academic_year === year) && (!eventSearch.trim() || e.title.includes(eventSearch.trim())),
+    (e) => (!year || e.academic_year === year) && (!eventSearch.trim() || e.title.toLowerCase().includes(eventSearch.trim().toLowerCase())),
   );
 
   const pickEvent = (id) => setSearchParams(id ? { event: id } : {});

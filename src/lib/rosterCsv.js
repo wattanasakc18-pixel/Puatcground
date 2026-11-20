@@ -15,5 +15,6 @@ export function exportRosterCsv({ event, levelLabel, rows, fields }) {
     excelText(r.class_room),
     ...fields.map((f) => excelText(formatAnswer(f, r.answers?.[f.id]))),
   ]);
-  exportCsv(`${event.title}_${levelLabel}_${date}.csv`, headers, data);
+  const title = event?.title ?? 'รายชื่อตัวแทน';
+  exportCsv(`${title}_${levelLabel}_${date}.csv`, headers, data);
 }

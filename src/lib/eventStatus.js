@@ -1,9 +1,12 @@
 // สถานะรับสมัครคำนวณตามระดับและแผนกของผู้ใช้เอง
 export function registrationStatus(eventLevel, countRow, now = new Date()) {
-  if (!eventLevel) return null;
+  if (!eventLevel || !eventLevel.reg_open_at || !eventLevel.reg_close_at) return null;
   const t = now.getTime();
-  if (t < new Date(eventLevel.reg_open_at).getTime()) return 'not-open';
-  if (t > new Date(eventLevel.reg_close_at).getTime()) return 'closed';
+  const openTime = new Date(eventLevel.reg_open_at).getTime();
+  const closeTime = new Date(eventLevel.reg_close_at).getTime();
+  if (Number.isNaN(openTime) || Number.isNaN(closeTime)) return null;
+  if (t < openTime) return 'not-open';
+  if (t > closeTime) return 'closed';
   if (countRow?.is_full) return 'full';
   return 'open';
 }

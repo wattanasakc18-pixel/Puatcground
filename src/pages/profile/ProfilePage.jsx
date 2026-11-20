@@ -64,9 +64,14 @@ export default function ProfilePage() {
 
   const openEdit = () => {
     setForm({
-      title: profile.title, first_name: profile.first_name, last_name: profile.last_name,
-      department_id: profile.department_id ?? '', level: profile.level ?? '',
-      class_room: profile.class_room, email: profile.email, phone: profile.phone,
+      title: profile?.title ?? '',
+      first_name: profile?.first_name ?? '',
+      last_name: profile?.last_name ?? '',
+      department_id: profile?.department_id ?? '',
+      level: profile?.level ?? '',
+      class_room: profile?.class_room ?? '',
+      email: profile?.email ?? '',
+      phone: profile?.phone ?? '',
     });
     setAvatarFile(null);
     setAvatarPreview('');
@@ -105,8 +110,8 @@ export default function ProfilePage() {
         department_id: form.department_id || null,
         level: form.level || null,
         class_room: form.class_room.trim(),
-        email: form.email.trim(),
-        phone: form.phone.trim(),
+        email: form.email?.trim() || '',
+        phone: form.phone?.trim() || '',
         ...(avatarUrl ? { avatar_url: avatarUrl } : {}),
       });
       await refreshProfile();
@@ -144,6 +149,7 @@ export default function ProfilePage() {
   };
 
   const submitAnswers = async () => {
+    if (!editing?.event_levels) return;
     const fields = fieldsForLevel(fieldsQuery.data?.filter((f) => f.event_id === editing.event_levels.event_id), editing.event_levels.level);
     const errs = validateAnswers(fields, answers);
     setFormErrors(errs);

@@ -76,11 +76,11 @@ function OrganizerModal({ target, onClose }) {
             </Select>
           </Field>
           {event && (
-            event.event_levels.length === 0 ? (
+            (event.event_levels?.length ?? 0) === 0 ? (
               <p className="text-sm text-coral">กิจกรรมนี้ยังไม่ได้ตั้งระดับที่เข้าร่วม ไปตั้งในหน้าแก้ไขกิจกรรมก่อน</p>
             ) : (
               <div className="space-y-2">
-                {event.event_levels.map((l) => (
+                {(event.event_levels ?? []).map((l) => (
                   <label key={l.id} className="flex items-center gap-3 min-h-11 bg-bg rounded-xl px-3 cursor-pointer">
                     <input type="checkbox" checked={selected.includes(l.id)} onChange={() => toggle(l.id)} className="w-5 h-5 accent-cobalt" />
                     <span className="text-sm">ระดับ {l.level}</span>

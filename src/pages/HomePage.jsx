@@ -63,16 +63,16 @@ export default function HomePage() {
   );
 
   const statusOf = (event) => {
-    const el = event.event_levels.find((l) => l.level === profile?.level);
+    const el = (event.event_levels ?? []).find((l) => l.level === profile?.level);
     return registrationStatus(el, countMap.get(el?.id));
   };
-  const registeredIn = (event) => event.event_levels.some((l) => registeredLevelIds.has(l.id));
+  const registeredIn = (event) => (event.event_levels ?? []).some((l) => registeredLevelIds.has(l.id));
 
   const events = eventsQuery.data ?? [];
   const openNow = events.filter((e) => statusOf(e) === 'open' && !registeredIn(e));
   const weekStart = startOfWeek(todayStr());
   const weekEnd = addDays(weekStart, 6);
-  const thisWeek = events.filter((e) => e.event_levels.some((l) => l.event_date >= weekStart && l.event_date <= weekEnd));
+  const thisWeek = events.filter((e) => (e.event_levels ?? []).some((l) => l.event_date >= weekStart && l.event_date <= weekEnd));
   const myUpcoming = (regsQuery.data ?? []).filter((r) => r.event_levels?.event_date >= todayStr());
 
   const card = (event) => (

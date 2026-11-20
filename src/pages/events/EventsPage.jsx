@@ -38,11 +38,11 @@ export default function EventsPage() {
 
   // สถานะของกิจกรรม คำนวณจากระดับของผู้ใช้เอง
   const statusOf = (event) => {
-    const el = event.event_levels.find((l) => l.level === profile?.level);
+    const el = (event.event_levels ?? []).find((l) => l.level === profile?.level);
     return registrationStatus(el, countMap.get(el?.id));
   };
   const registeredIn = (event) =>
-    event.event_levels.some((l) => registeredLevelIds.has(l.id));
+    (event.event_levels ?? []).some((l) => registeredLevelIds.has(l.id));
 
   const days = useMemo(() => monthGrid(month), [month]);
   const today = todayStr();
@@ -54,13 +54,13 @@ export default function EventsPage() {
     const map = new Map(days.filter((d) => d.slice(0, 7) === month.slice(0, 7)).map((d) => [d, []]));
     for (const event of eventsQuery.data ?? []) {
       const matchDates = new Set(
-        event.event_levels
+        (event.event_levels ?? [])
           .filter((l) => filter === 'all' || l.level === filter)
           .map((l) => l.event_date),
       );
       for (const date of matchDates) {
         if (!map.has(date)) continue;
-        const levelsOnDate = event.event_levels.filter((l) => l.event_date === date);
+        const levelsOnDate = (event.event_levels ?? []).filter((l) => l.event_date === date);
         map.get(date).push({ event, levels: levelsOnDate });
       }
     }

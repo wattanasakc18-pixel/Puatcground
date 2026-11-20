@@ -28,12 +28,14 @@ export default function AppLayout({ children }) {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [manageOpen, setManageOpen] = useState(false);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const role = profile?.role ?? 'student';
   const manageLinks = MANAGE_LINKS.filter((l) => l.roles.includes(role));
 
   const logout = async () => {
     await signOut();
     setMenuOpen(false);
+    setProfileDropdownOpen(false);
     navigate('/login', { replace: true });
   };
 
@@ -101,13 +103,67 @@ export default function AppLayout({ children }) {
             {/* Right side */}
             <div className="ml-auto flex items-center gap-2 shrink-0">
               <span className="hidden lg:block text-sm text-ink/40">{fmtDate(todayStr())}</span>
-              <Link to="/profile" className="hidden md:block" aria-label="โปรไฟล์">
-                <Avatar url={profile?.avatar_url} name={fullName(profile)} size="w-8 h-8 text-xs" />
-              </Link>
-              <button onClick={logout} aria-label="ออกจากระบบ" className="hidden md:flex p-2 rounded-lg text-ink/50 hover:bg-line/60">
-                <LogOut className="w-5 h-5" />
-              </button>
-              <button onClick={() => setMenuOpen(true)} className="md:hidden flex items-center gap-1 px-3 min-h-10 rounded-xl hover:bg-line/60 text-sm font-medium">
+
+              {/* Desktop Profile Menu */}
+              <div className="relative hidden md:block">
+                <button
+                  onClick={() => setProfileDropdownOpen((v) => !v)}
+                  aria-expanded={profileDropdownOpen}
+                  aria-label="เมนูโปรไฟล์"
+                  className="flex items-center gap-2 px-2 py-1 rounded-xl hover:bg-line/60 transition-colors"
+                >
+                  <Avatar url={profile?.avatar_url} name={fullName(profile)} size="w-8 h-8 text-xs" />
+                  <span className="text-sm font-medium text-ink max-w-[130px] truncate">{fullName(profile)}</span>
+                  <ChevronDown className="w-3.5 h-3.5 text-ink/50" />
+                </button>
+
+                {profileDropdownOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" onClick={() => setProfileDropdownOpen(false)} aria-hidden />
+                    <div className="absolute right-0 top-full mt-1.5 z-50 bg-white border border-line rounded-2xl shadow-xl py-2 min-w-56 overflow-hidden">
+                      <div className="px-4 py-2 border-b border-line bg-bg/50">
+                        <p className="font-semibold text-sm text-ink truncate">{fullName(profile)}</p>
+                        <p className="text-xs text-ink/60 truncate mt-0.5">
+                          {profile?.student_code ? `${profile.student_code} · ` : ''}{profile?.department_name || 'ไม่ระบุแผนก'}
+                        </p>
+                      </div>
+                      <div className="p-1 space-y-0.5">
+                        <Link
+                          to="/profile"
+                          onClick={() => setProfileDropdownOpen(false)}
+                          className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-ink/80 hover:bg-bg hover:text-ink font-medium"
+                        >
+                          <User className="w-4 h-4 text-cobalt" /> โปรไฟล์ของฉัน
+                        </Link>
+                        {manageLinks.map((l) => (
+                          <Link
+                            key={l.to}
+                            to={l.to}
+                            onClick={() => setProfileDropdownOpen(false)}
+                            className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-ink/80 hover:bg-bg hover:text-ink"
+                          >
+                            <l.icon className="w-4 h-4 text-ink/50" /> {l.label}
+                          </Link>
+                        ))}
+                        <div className="h-px bg-line my-1" />
+                        <button
+                          onClick={logout}
+                          className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-coral hover:bg-coral/10 w-full font-medium"
+                        >
+                          <LogOut className="w-4 h-4" /> ออกจากระบบ
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Mobile hamburger button */}
+              <button
+                onClick={() => setMenuOpen(true)}
+                aria-label="เปิดเมนู"
+                className="md:hidden flex items-center gap-1 px-3 min-h-10 rounded-xl hover:bg-line/60 text-sm font-medium"
+              >
                 <Menu className="w-5 h-5" />
               </button>
             </div>
@@ -144,26 +200,76 @@ export default function AppLayout({ children }) {
         </div>
       </nav>
 
-      {/* เมนูมือถือ: เมนูจัดการ + ออกจากระบบ */}
+      {/* เมนูมือถือ: ข้อมูลผู้ใช้ + เมนูทั้งหมด + เมนูจัดการ + ออกจากระบบ */}
       <Modal open={menuOpen} onClose={() => setMenuOpen(false)} title="เมนู">
-        <div className="flex items-center gap-3 pb-4 border-b border-line mb-3">
-          <Avatar url={profile?.avatar_url} name={fullName(profile)} />
-          <div>
-            <p className="font-medium">{fullName(profile)}</p>
-            <p className="text-sm text-ink/60">{profile?.department_name} · {profile?.level}</p>
+        {/* Profile Card -> Clickable to /profile */}
+        <Link
+          to="/profile"
+          onClick={() => setMenuOpen(false)}
+          className="flex items-center gap-3 p-3 rounded-2xl bg-bg hover:bg-cobalt/5 border border-line transition-colors mb-3 group"
+        >
+          <Avatar url={profile?.avatar_url} name={fullName(profile)} size="w-12 h-12 text-sm" />
+          <div className="min-w-0 flex-1">
+            <p className="font-semibold text-ink group-hover:text-cobalt transition-colors truncate">{fullName(profile)}</p>
+            <p className="text-xs text-ink/60 truncate">{profile?.department_name || 'ไม่ระบุแผนก'} · {profile?.level || 'ไม่ระบุระดับ'}</p>
+            <span className="text-[11px] text-cobalt font-medium mt-0.5 inline-block">แตะเพื่อดูโปรไฟล์ของคุณ →</span>
           </div>
-        </div>
+        </Link>
+
+        {/* เมนูหลัก */}
         <div className="space-y-1">
-          {manageLinks.map((l) => (
+          <p className="text-[11px] font-semibold text-ink/40 uppercase tracking-wider px-3 mb-1">เมนูหลัก</p>
+          {MAIN_LINKS.map((l) => (
             <NavLink
               key={l.to}
               to={l.to}
+              end={l.end}
               onClick={() => setMenuOpen(false)}
-              className="flex items-center gap-3 px-3 min-h-11 rounded-xl hover:bg-bg font-medium"
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3 min-h-11 rounded-xl font-medium transition-colors ${
+                  isActive ? 'text-cobalt bg-cobalt/10' : 'text-ink/80 hover:bg-bg'
+                }`
+              }
             >
               <l.icon className="w-5 h-5 text-cobalt" /> {l.label}
             </NavLink>
           ))}
+          <NavLink
+            to="/profile"
+            onClick={() => setMenuOpen(false)}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-3 min-h-11 rounded-xl font-medium transition-colors ${
+                isActive ? 'text-cobalt bg-cobalt/10' : 'text-ink/80 hover:bg-bg'
+              }`
+            }
+          >
+            <User className="w-5 h-5 text-cobalt" /> โปรไฟล์ของฉัน
+          </NavLink>
+        </div>
+
+        {/* เมนูจัดการ (admin / organizer) */}
+        {manageLinks.length > 0 && (
+          <div className="space-y-1 mt-4 pt-3 border-t border-line">
+            <p className="text-[11px] font-semibold text-ink/40 uppercase tracking-wider px-3 mb-1">การจัดการ</p>
+            {manageLinks.map((l) => (
+              <NavLink
+                key={l.to}
+                to={l.to}
+                onClick={() => setMenuOpen(false)}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-3 min-h-11 rounded-xl font-medium transition-colors ${
+                    isActive ? 'text-cobalt bg-cobalt/10' : 'text-ink/80 hover:bg-bg'
+                  }`
+                }
+              >
+                <l.icon className="w-5 h-5 text-cobalt" /> {l.label}
+              </NavLink>
+            ))}
+          </div>
+        )}
+
+        {/* ออกจากระบบ */}
+        <div className="mt-4 pt-3 border-t border-line">
           <button onClick={logout} className="flex items-center gap-3 px-3 min-h-11 rounded-xl hover:bg-coral/10 text-coral font-medium w-full">
             <LogOut className="w-5 h-5" /> ออกจากระบบ
           </button>

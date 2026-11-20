@@ -87,11 +87,11 @@ export default function ReportsPage() {
                 {visibleEvents.map((ev) => <option key={ev.id} value={ev.id}>{ev.title} (ปี {ev.academic_year})</option>)}
               </Select>
             </Field>
-            {event && event.event_levels.length > 1 && (
+            {event && (event.event_levels?.length ?? 0) > 1 && (
               <Field label="ระดับ" htmlFor="rp-level">
                 <Select id="rp-level" value={levelFilter} onChange={(e) => setLevelFilter(e.target.value)}>
                   <option value="all">ทุกระดับ</option>
-                  {event.event_levels.map((l) => <option key={l.id} value={l.level}>{l.level}</option>)}
+                  {(event.event_levels ?? []).map((l) => <option key={l.id} value={l.level}>{l.level}</option>)}
                 </Select>
               </Field>
             )}
@@ -108,7 +108,7 @@ export default function ReportsPage() {
                   <p className="text-sm text-white/70">ผู้ลงชื่อรวม{levelFilter !== 'all' ? ` (${levelFilter})` : ''}</p>
                   <p className="text-3xl font-bold mt-1">{total}</p>
                 </div>
-                {event.event_levels.map((l) => (
+                {(event.event_levels ?? []).map((l) => (
                   <div key={l.id} className="bg-white rounded-2xl border border-line p-4">
                     <LevelBadge level={l.level} />
                     <p className="text-3xl font-bold mt-2">{perLevel[l.level] ?? 0}</p>
@@ -128,7 +128,7 @@ export default function ReportsPage() {
                     <thead>
                       <tr className="bg-bg text-left">
                         <th className="px-4 py-3 font-semibold">แผนกวิชา</th>
-                        {event.event_levels
+                        {(event.event_levels ?? [])
                           .filter((l) => levelFilter === 'all' || l.level === levelFilter)
                           .map((l) => <th key={l.id} className="px-4 py-3 font-semibold text-center">{l.level}</th>)}
                       </tr>
@@ -137,7 +137,7 @@ export default function ReportsPage() {
                       {deptRows.map((d) => (
                         <tr key={d.name}>
                           <td className="px-4 py-2.5">{d.name}</td>
-                          {event.event_levels
+                          {(event.event_levels ?? [])
                             .filter((l) => levelFilter === 'all' || l.level === levelFilter)
                             .map((l) => {
                               const c = d.levels[l.level];
