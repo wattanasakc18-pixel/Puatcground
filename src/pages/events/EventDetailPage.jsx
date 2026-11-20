@@ -312,9 +312,9 @@ function ResultsTab({ eventId, rosterQuery, countsQuery, canEdit }) {
   };
 
   return (
-    <div className="space-y-6">
-      {/* สรุปจำนวนผู้เข้าร่วม */}
-      <div>
+    <div className="space-y-4">
+      {/* การ์ด: สรุปจำนวนผู้เข้าร่วม */}
+      <div className="bg-white rounded-2xl border border-line p-5">
         <h3 className="text-sm font-semibold text-ink/50 uppercase tracking-wide mb-3 flex items-center gap-2">
           <Users className="w-4 h-4" /> สรุปผู้เข้าร่วม ({roster.length} คน)
         </h3>
@@ -322,7 +322,6 @@ function ResultsTab({ eventId, rosterQuery, countsQuery, canEdit }) {
           <p className="text-sm text-ink/50">ยังไม่มีผู้ลงชื่อเข้าร่วม</p>
         ) : (
           <div className="space-y-2">
-            {/* สรุปต่อระดับ */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
               {event.event_levels.map((l) => {
                 const count = roster.filter((r) => r.level === l.level).length;
@@ -338,8 +337,7 @@ function ResultsTab({ eventId, rosterQuery, countsQuery, canEdit }) {
                 <p className="text-xs text-ink/60">รวมทั้งหมด</p>
               </div>
             </div>
-            {/* แยกแผนก */}
-            <div className="bg-white rounded-2xl border border-line overflow-hidden">
+            <div className="rounded-2xl border border-line overflow-hidden">
               <table className="w-full text-sm">
                 <thead className="bg-bg border-b border-line">
                   <tr>
@@ -367,23 +365,20 @@ function ResultsTab({ eventId, rosterQuery, countsQuery, canEdit }) {
         )}
       </div>
 
-      {/* ผลการแข่งขัน */}
-      <div>
+      {/* การ์ด: ผลการแข่งขัน */}
+      <div className="bg-white rounded-2xl border border-line p-5">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-semibold text-ink/50 uppercase tracking-wide flex items-center gap-2">
             <Trophy className="w-4 h-4" /> ผลการแข่งขัน
           </h3>
           {canEdit && !editing && (
-            <button
-              onClick={() => setEditing(true)}
-              className="text-xs text-cobalt hover:underline flex items-center gap-1"
-            >
+            <button onClick={() => setEditing(true)} className="text-xs text-cobalt hover:underline flex items-center gap-1">
               <Pencil className="w-3.5 h-3.5" /> แก้ไข
             </button>
           )}
         </div>
 
-        {/* toggle ปิด/เปิด — บันทึกทันที แยกออกจากฟอร์ม */}
+        {/* toggle ปิด/เปิด */}
         {canEdit && (
           <div className="flex items-center gap-3 bg-bg rounded-xl px-4 py-3 mb-3">
             <button
@@ -414,7 +409,8 @@ function ResultsTab({ eventId, rosterQuery, countsQuery, canEdit }) {
           </div>
         )}
 
-        {editing ? (          <div className="space-y-3">
+        {editing ? (
+          <div className="space-y-3">
             <div>
               <label className="block text-sm font-medium mb-1.5">ผลการแข่งขัน / รายละเอียด</label>
               <textarea
@@ -436,22 +432,8 @@ function ResultsTab({ eventId, rosterQuery, countsQuery, canEdit }) {
                 onChange={(e) => setResultImageUrl(e.target.value)}
               />
             </div>
-            <div className="flex items-center gap-3 bg-bg rounded-xl px-4 py-3">
-              <button
-                type="button"
-                role="switch"
-                aria-checked={resultVisible}
-                onClick={() => setResultVisible((v) => !v)}
-                className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${resultVisible ? 'bg-cobalt' : 'bg-line'}`}
-              >
-                <span className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white shadow transition-transform ${resultVisible ? 'translate-x-5' : 'translate-x-0'}`} />
-              </button>
-              <div>
-                <p className="text-sm font-medium">{resultVisible ? 'เปิดให้นักศึกษาเห็นผลลัพธ์' : 'ซ่อนผลลัพธ์จากนักศึกษา'}</p>
-                <p className="text-xs text-ink/50">{resultVisible ? 'นักศึกษาสามารถดูผลการแข่งขันได้' : 'เฉพาะ admin/organizer เท่านั้นที่เห็น'}</p>
-              </div>
-            </div>            <div className="flex gap-2 justify-end">
-              <Button variant="secondary" onClick={() => { setEditing(false); setResultText(event.result_text ?? ''); setResultImageUrl(event.result_image_url ?? ''); setResultVisible(event.result_visible ?? false); }} disabled={saving}>
+            <div className="flex gap-2 justify-end">
+              <Button variant="secondary" onClick={() => { setEditing(false); setResultText(event.result_text ?? ''); setResultImageUrl(event.result_image_url ?? ''); }} disabled={saving}>
                 ยกเลิก
               </Button>
               <Button onClick={save} loading={saving}>
