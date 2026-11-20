@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase.js';
+import { fmtDate } from '../lib/format.js';
 
 /**
  * ส่งอีเมลผ่าน Edge Function send-email
@@ -37,10 +38,10 @@ export function emailPasswordReset({ email, name, newPassword }) {
 }
 
 export async function notifyEventApproved(eventId) {
-  // ดึงข้อมูลกิจกรรม
+  // ดึงข้อมูลกิจกรรมพร้อมระดับ
   const { data: event, error: eventErr } = await supabase
     .from('events')
-    .select('id, title, academic_year, created_by')
+    .select('id, title, academic_year, created_by, event_levels(level, event_date, reg_close_at)')
     .eq('id', eventId)
     .single();
 
@@ -50,6 +51,12 @@ export async function notifyEventApproved(eventId) {
 
   const eventTitle = event.title || 'กิจกรรมใหม่';
   const academicYear = String(event.academic_year || '');
+  const levels = event.event_levels ?? [];
+  const levelNames = levels.map((l) => l.level).filter(Boolean);
+  const levelStr = levelNames.length > 0 ? levelNames.join(' / ') : 'ทุกระดับ';
+  const firstLevel = levels[0];
+  const eventDateStr = firstLevel?.event_date ? fmtDate(firstLevel.event_date) : `ปีการศึกษา ${academicYear}`;
+  const closeDateStr = firstLevel?.reg_close_at ? fmtDate(firstLevel.reg_close_at) : 'ตามประกาศ';
 
   // 1. แจ้งผู้จัดกิจกรรม (organizer ที่สร้างกิจกรรม) ถ้ามีอีเมล
   let creatorNotified = false;
@@ -65,14 +72,16 @@ export async function notifyEventApproved(eventId) {
       creatorEmail = creator.email.trim();
       const creatorName = `${creator.first_name ?? ''} ${creator.last_name ?? ''}`.trim() || 'ผู้จัดกิจกรรม';
       try {
-        await sendEmail('event_approved', creatorEmail, {
+        await sendEmail('event_open', creatorEmail, {
           name: creatorName,
           eventTitle,
-          academicYear,
+          eventDate: eventDateStr,
+          closeDate: closeDateStr,
+          level: levelStr,
         });
         creatorNotified = true;
       } catch (err) {
-        console.warn('Failed to send event_approved email to creator:', err);
+        console.warn('Failed to send email to creator:', err);
       }
     }
   }
@@ -101,7 +110,7 @@ export async function notifyEventApproved(eventId) {
     notifyList.push({ ...s, email: s.email.trim() });
   }
 
-  // ส่งอีเมลให้นักศึกษาทีละชุด (5 คนต่อชุด) เพื่อไม่ให้ติด rate limit
+  // ส่งอีเมลให้นักศึกษาทีละชุด (5 คนต่อชุด) ด้วย template 'event_open' ที่รองรับบน Cloud
   const results = [];
   const batchSize = 5;
   for (let i = 0; i < notifyList.length; i += batchSize) {
@@ -109,10 +118,12 @@ export async function notifyEventApproved(eventId) {
     const batchResults = await Promise.allSettled(
       batch.map((s) => {
         const name = `${s.first_name ?? ''} ${s.last_name ?? ''}`.trim() || 'นักศึกษา';
-        return sendEmail('new_event_notify', s.email, {
+        return sendEmail('event_open', s.email, {
           name,
           eventTitle,
-          academicYear,
+          eventDate: eventDateStr,
+          closeDate: closeDateStr,
+          level: levelStr,
         });
       }),
     );

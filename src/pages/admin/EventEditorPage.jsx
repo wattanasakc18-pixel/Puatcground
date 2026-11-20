@@ -223,12 +223,13 @@ function LevelsTab({ event, rows, setRows }) {
       queryClient.invalidateQueries({ queryKey: ['event-counts', event.id] });
       toast('บันทึกระดับที่เข้าร่วมแล้ว');
 
-      // ถ้าเป็นกิจกรรมที่อนุมัติแล้ว และเพิ่งตั้งค่าระดับครั้งแรก (เปิดกิจกรรมใหม่) ให้ส่งแจ้งเตือนนักศึกษาทุกคนอัตโนมัติทันที
-      if ((isInitialSetup || isCopiedNew) && event.approval_status === 'approved') {
-        localStorage.setItem(`notified_${event.id}`, 'true');
+      // ถ้าเป็นกิจกรรมที่อนุมัติแล้ว และมีระดับที่เปิด ให้ส่งแจ้งเตือนนักศึกษาทุกคนอัตโนมัติ (ส่งครั้งแรก)
+      const alreadyNotified = localStorage.getItem(`notified_${event.id}`);
+      if (!alreadyNotified && event.approval_status === 'approved' && rows.some((r) => r.enabled)) {
         notifyEventApproved(event.id)
           .then((res) => {
             if (res?.sentStudents > 0) {
+              localStorage.setItem(`notified_${event.id}`, 'true');
               toast(`ส่งอีเมลแจ้งเตือนกิจกรรมใหม่ให้นักศึกษาอัตโนมัติแล้ว (${res.sentStudents} คน)`);
             }
           })
