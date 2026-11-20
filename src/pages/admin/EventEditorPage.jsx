@@ -125,6 +125,7 @@ function emptyRow(level) {
   return {
     level, enabled: false, id: null,
     event_date: '', reg_open_at: '', reg_close_at: '', min_per_dept: '', max_per_dept: '',
+    event_start_time: '', event_end_time: '',
   };
 }
 
@@ -136,6 +137,8 @@ function rowFromLevel(l) {
     reg_close_at: l.reg_close_at ? l.reg_close_at.slice(0, 10) : '',
     min_per_dept: l.min_per_dept ?? '',
     max_per_dept: l.max_per_dept ?? '',
+    event_start_time: l.event_start_time ?? '',
+    event_end_time: l.event_end_time ?? '',
   };
 }
 
@@ -196,6 +199,8 @@ function LevelsTab({ event, rows, setRows }) {
             reg_close_at: `${r.reg_close_at}T23:59:59+07:00`,
             min_per_dept: r.min_per_dept === '' ? null : Number(r.min_per_dept),
             max_per_dept: r.max_per_dept === '' ? null : Number(r.max_per_dept),
+            event_start_time: r.event_start_time || null,
+            event_end_time: r.event_end_time || null,
           };
           if (r.id) await updateEventLevel(r.id, payload);
           else await createEventLevel(payload);
@@ -252,6 +257,14 @@ function LevelsTab({ event, rows, setRows }) {
                   {r.event_date && <p className="text-xs text-ink/50 mt-1">{new Date(`${r.event_date}T00:00:00+07:00`).toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Bangkok' })}</p>}
                 </Field>
                 <div className="hidden sm:block" />
+                <Field label="เวลาเริ่มกิจกรรม" htmlFor={`start-${r.level}`}>
+                  <Input id={`start-${r.level}`} type="time" value={r.event_start_time} onChange={(ev) => setRow(r.level, { event_start_time: ev.target.value })} />
+                  <p className="text-xs text-ink/40 mt-1">ระบบจะแจ้งเตือนผู้เข้าร่วมก่อน 10 นาที</p>
+                </Field>
+                <Field label="เวลาสิ้นสุดกิจกรรม" htmlFor={`end-${r.level}`}>
+                  <Input id={`end-${r.level}`} type="time" value={r.event_end_time} onChange={(ev) => setRow(r.level, { event_end_time: ev.target.value })} />
+                  <p className="text-xs text-ink/40 mt-1">ระบบจะแจ้งเตือนผู้เข้าร่วมหลัง 10 นาที</p>
+                </Field>
                 <Field label="เปิดรับสมัคร" required error={e.reg_open_at} htmlFor={`open-${r.level}`}>
                   <Input id={`open-${r.level}`} type="date" value={r.reg_open_at} onChange={(ev) => setRow(r.level, { reg_open_at: ev.target.value })} />
                   {r.reg_open_at && <p className="text-xs text-ink/50 mt-1">{new Date(`${r.reg_open_at}T00:00:00+07:00`).toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Bangkok' })}</p>}
