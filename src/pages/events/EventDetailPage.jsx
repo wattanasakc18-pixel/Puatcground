@@ -157,63 +157,79 @@ function RegistrationCard({
 // ── Tab: ข้อมูลกิจกรรม ────────────────────────────────────────────────────────
 function InfoTab({ event }) {
   return (
-    <div className="space-y-6">
-      {/* ระยะเวลาแข่งขัน */}
-      <div>
-        <h3 className="text-sm font-semibold text-ink/50 uppercase tracking-wide mb-3">ช่วงเวลาแข่งขัน</h3>
+    <div className="space-y-4">
+      {/* การ์ด: ช่วงเวลา */}
+      <div className="bg-white rounded-2xl border border-line p-5">
+        <h3 className="text-xs font-semibold text-ink/40 uppercase tracking-widest mb-4">ช่วงเวลาแข่งขัน</h3>
         <div className="grid sm:grid-cols-2 gap-3">
           {event.event_levels.map((l) => (
-            <div key={l.id} className="bg-bg rounded-2xl border border-line p-4 space-y-2">
+            <div key={l.id} className="bg-bg rounded-2xl border border-line p-4 space-y-3">
               <LevelBadge level={l.level} />
-              <div className="flex items-start gap-2 text-sm">
-                <Calendar className="w-4 h-4 text-ink/40 mt-0.5 shrink-0" />
+              {/* วันจัดจริง — เด่นที่สุด */}
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-xl bg-cobalt/10 flex items-center justify-center shrink-0">
+                  <Calendar className="w-4 h-4 text-cobalt" />
+                </div>
                 <div>
-                  <p className="text-ink/50 text-xs">วันจัดจริง</p>
-                  <p className="font-medium">{fmtDate(l.event_date, { weekday: 'long' })}</p>
+                  <p className="text-xs text-ink/40 mb-0.5">วันจัดกิจกรรม</p>
+                  <p className="text-base font-bold text-ink">{fmtDate(l.event_date, { weekday: 'long' })}</p>
                 </div>
               </div>
-              <div className="flex items-start gap-2 text-sm">
-                <Clock className="w-4 h-4 text-ink/40 mt-0.5 shrink-0" />
+              {/* ช่วงรับสมัคร */}
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-xl bg-bg border border-line flex items-center justify-center shrink-0">
+                  <Clock className="w-4 h-4 text-ink/40" />
+                </div>
                 <div>
-                  <p className="text-ink/50 text-xs">รับสมัคร</p>
-                  <p>{fmtDate(l.reg_open_at)}</p>
-                  <p className="text-ink/50">ถึง {fmtDate(l.reg_close_at)}</p>
+                  <p className="text-xs text-ink/40 mb-0.5">ช่วงรับสมัคร</p>
+                  <p className="text-sm font-medium text-ink">{fmtDate(l.reg_open_at)}</p>
+                  <p className="text-xs text-ink/50">ถึง {fmtDate(l.reg_close_at)}</p>
                 </div>
               </div>
-              <p className="text-sm">
-                <span className="text-ink/50">โควตาต่อแผนก: </span>
-                {l.min_per_dept == null && l.max_per_dept == null
-                  ? 'ไม่กำหนด'
-                  : `${l.min_per_dept != null ? `ขั้นต่ำ ${l.min_per_dept}` : 'ไม่กำหนดขั้นต่ำ'} / ${l.max_per_dept != null ? `สูงสุด ${l.max_per_dept}` : 'ไม่จำกัด'}`}
-              </p>
+              {/* โควตา */}
+              <div className="text-xs text-ink/50 border-t border-line pt-2">
+                โควตาต่อแผนก:{' '}
+                <span className="text-ink font-medium">
+                  {l.min_per_dept == null && l.max_per_dept == null
+                    ? 'ไม่กำหนด'
+                    : `${l.min_per_dept != null ? `ขั้นต่ำ ${l.min_per_dept}` : 'ไม่กำหนดขั้นต่ำ'} / ${l.max_per_dept != null ? `สูงสุด ${l.max_per_dept}` : 'ไม่จำกัด'}`}
+                </span>
+              </div>
             </div>
           ))}
         </div>
       </div>
 
-      {/* รายละเอียด */}
+      {/* การ์ด: รายละเอียด */}
       {event.description && (
-        <div>
-          <h3 className="text-sm font-semibold text-ink/50 uppercase tracking-wide mb-3">รายละเอียด</h3>
-          <div className="bg-bg rounded-2xl border border-line p-4">
-            <p className="text-sm text-ink/80 whitespace-pre-line leading-relaxed">{event.description}</p>
-          </div>
+        <div className="bg-white rounded-2xl border border-line p-5">
+          <h3 className="text-xs font-semibold text-ink/40 uppercase tracking-widest mb-3">รายละเอียด</h3>
+          <p className="text-sm text-ink/80 whitespace-pre-line leading-relaxed">{event.description}</p>
         </div>
       )}
 
-      {/* สถานที่จัด + เบอร์ติดต่อ */}
+      {/* การ์ด: ข้อมูลเพิ่มเติม */}
       {(event.location || event.contact_phone) && (
-        <div>
-          <h3 className="text-sm font-semibold text-ink/50 uppercase tracking-wide mb-3">ข้อมูลเพิ่มเติม</h3>
-          <div className="bg-bg rounded-2xl border border-line p-4 space-y-2 text-sm">
+        <div className="bg-white rounded-2xl border border-line p-5">
+          <h3 className="text-xs font-semibold text-ink/40 uppercase tracking-widest mb-3">ข้อมูลเพิ่มเติม</h3>
+          <div className="space-y-2 text-sm">
             {event.location && (
-              <p><span className="text-ink/50">สถานที่จัด: </span>{event.location}</p>
+              <div className="flex items-start gap-2">
+                <span className="text-ink/40 shrink-0 mt-0.5">📍</span>
+                <div>
+                  <p className="text-xs text-ink/40">สถานที่จัด</p>
+                  <p className="font-medium">{event.location}</p>
+                </div>
+              </div>
             )}
             {event.contact_phone && (
-              <p>
-                <span className="text-ink/50">เบอร์ติดต่อ: </span>
-                <a href={`tel:${event.contact_phone}`} className="text-cobalt hover:underline">{event.contact_phone}</a>
-              </p>
+              <div className="flex items-start gap-2">
+                <span className="text-ink/40 shrink-0 mt-0.5">📞</span>
+                <div>
+                  <p className="text-xs text-ink/40">เบอร์ติดต่อ</p>
+                  <a href={`tel:${event.contact_phone}`} className="font-medium text-cobalt hover:underline">{event.contact_phone}</a>
+                </div>
+              </div>
             )}
           </div>
         </div>
