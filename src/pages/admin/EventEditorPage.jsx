@@ -13,7 +13,7 @@ import { toDatetimeLocal, localToTimestamptz, todayStr } from '../../lib/format.
 import { toThaiError } from '../../lib/errors.js';
 import { useToast } from '../../components/ui/Toast.jsx';
 import Button from '../../components/ui/Button.jsx';
-import { Field, Input, Select, Textarea } from '../../components/ui/Field.jsx';
+import { Field, Input, Select, Textarea, TimeInput } from '../../components/ui/Field.jsx';
 import { LoadingState, ErrorState } from '../../components/ui/States.jsx';
 import { ApprovalBadge } from '../../components/Badges.jsx';
 import FormBuilder from './FormBuilder.jsx';
@@ -260,11 +260,19 @@ function LevelsTab({ event, rows, setRows }) {
                 </Field>
                 <div className="hidden sm:block" />
                 <Field label="เวลาเริ่มกิจกรรม" htmlFor={`start-${r.level}`}>
-                  <Input id={`start-${r.level}`} type="time" value={r.event_start_time} onChange={(ev) => setRow(r.level, { event_start_time: ev.target.value })} />
+                  <TimeInput
+                    id={`start-${r.level}`}
+                    value={r.event_start_time}
+                    onChange={(val) => setRow(r.level, { event_start_time: val })}
+                  />
                   <p className="text-xs text-ink/40 mt-1">แจ้งเตือนก่อน 10 นาที</p>
                 </Field>
                 <Field label="เวลาสิ้นสุดกิจกรรม" htmlFor={`end-${r.level}`}>
-                  <Input id={`end-${r.level}`} type="time" value={r.event_end_time} onChange={(ev) => setRow(r.level, { event_end_time: ev.target.value })} />
+                  <TimeInput
+                    id={`end-${r.level}`}
+                    value={r.event_end_time}
+                    onChange={(val) => setRow(r.level, { event_end_time: val })}
+                  />
                   <p className="text-xs text-ink/40 mt-1">แจ้งเตือนหลัง 10 นาที</p>
                 </Field>
                 <Field label="เปิดรับสมัคร" required error={e.reg_open_at} htmlFor={`open-${r.level}`}>
